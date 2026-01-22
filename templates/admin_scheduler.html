@@ -1,0 +1,198 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+
+<!-- Modern Page Header -->
+<div class="modern-page-header animate-in">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="modern-title">
+                <i class="bi bi-clock-fill"></i> Scheduler
+            </h1>
+            <p class="modern-subtitle">Automate RSS feed processing</p>
+        </div>
+        <button class="btn-modern btn-modern-success" onclick="runNow()">
+            <i class="bi bi-play-fill"></i>
+            Run Now
+        </button>
+    </div>
+</div>
+
+<!-- Compact Stats Grid -->
+<div class="modern-stats-grid animate-in">
+    <div class="modern-stat-card" style="--stat-color-1: #3b82f6; --stat-color-2: #2563eb;">
+        <div class="stat-header">
+            <div>
+                <div class="stat-label-modern">Status</div>
+                <div class="stat-value-modern" style="font-size: 1.5rem;">
+                    {% if is_running %}Running{% else %}Stopped{% endif %}
+                </div>
+            </div>
+            <div class="stat-icon-modern">
+                <i class="bi bi-{% if is_running %}play-circle-fill{% else %}stop-circle-fill{% endif %}"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-stat-card" style="--stat-color-1: #10b981; --stat-color-2: #059669;">
+        <div class="stat-header">
+            <div>
+                <div class="stat-label-modern">Next Run</div>
+                <div style="font-size: 0.9rem; font-weight: 600; color: var(--admin-dark);">
+                    {% if next_run %}
+                    {{ next_run.strftime('%b %d, %H:%M') }}
+                    {% else %}
+                    Not scheduled
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-icon-modern">
+                <i class="bi bi-calendar-event-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Configuration Card -->
+<div class="modern-card animate-in mb-4">
+    <div class="modern-card-header">
+        <h2 class="modern-card-title">
+            <i class="bi bi-gear-fill"></i>
+            Schedule Configuration
+        </h2>
+    </div>
+    <div class="modern-card-body">
+        <form method="POST" action="{{ url_for('update_schedule') }}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label-modern">
+                        <i class="bi bi-clock"></i> Frequency
+                    </label>
+                    <select class="form-control-modern" id="frequency" name="frequency" onchange="updateScheduleOptions()">
+                        <option value="daily">Daily</option>
+                        <option value="hourly">Every N Hours</option>
+                        <option value="weekdays">Weekdays Only</option>
+                        <option value="weekly">Weekly</option>
+                    </select>
+                </div>
+                <div class="col-md-3" id="time-section">
+                    <label class="form-label-modern">Time (24-hour)</label>
+                    <input type="time" class="form-control-modern" id="time" name="time" value="09:00">
+                </div>
+                <div class="col-md-3" id="interval-section" style="display:none;">
+                    <label class="form-label-modern">Interval</label>
+                    <select class="form-control-modern" id="interval" name="interval">
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="6">6 hours</option>
+                        <option value="12">12 hours</option>
+                    </select>
+                </div>
+                <div class="col-md-3" id="weekday-section" style="display:none;">
+                    <label class="form-label-modern">Day of Week</label>
+                    <select class="form-control-modern" id="weekday" name="weekday">
+                        <option value="0">Sunday</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn-modern btn-modern-primary w-100">
+                        <i class="bi bi-check-circle-fill"></i> Update
+                    </button>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="alert alert-info d-flex align-items-center gap-2 mb-0">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span><strong>Cron:</strong> <code id="cron-preview">0 9 * * *</code></span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Date Range Report Card -->
+<div class="modern-card animate-in">
+    <div class="modern-card-header">
+        <h2 class="modern-card-title">
+            <i class="bi bi-file-earmark-bar-graph-fill"></i>
+            Generate Report
+        </h2>
+    </div>
+    <div class="modern-card-body">
+        <form method="POST" action="{{ url_for('generate_date_range_report') }}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label-modern">Start Date</label>
+                    <input type="date" class="form-control-modern" id="start_date" name="start_date" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-modern">End Date</label>
+                    <input type="date" class="form-control-modern" id="end_date" name="end_date" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label-modern">Format</label>
+                    <select class="form-control-modern" id="format" name="format">
+                        <option value="markdown">Markdown</option>
+                        <option value="html">HTML</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn-modern btn-modern-primary w-100">
+                        <i class="bi bi-download"></i> Generate
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateScheduleOptions() {
+    const frequency = document.getElementById('frequency').value;
+    const timeSection = document.getElementById('time-section');
+    const intervalSection = document.getElementById('interval-section');
+    const weekdaySection = document.getElementById('weekday-section');
+    const cronPreview = document.getElementById('cron-preview');
+    
+    timeSection.style.display = 'none';
+    intervalSection.style.display = 'none';
+    weekdaySection.style.display = 'none';
+    
+    switch(frequency) {
+        case 'daily':
+            timeSection.style.display = 'block';
+            cronPreview.textContent = '0 9 * * *';
+            break;
+        case 'hourly':
+            intervalSection.style.display = 'block';
+            cronPreview.textContent = '0 */6 * * *';
+            break;
+        case 'weekdays':
+            timeSection.style.display = 'block';
+            cronPreview.textContent = '0 9 * * 1-5';
+            break;
+        case 'weekly':
+            timeSection.style.display = 'block';
+            weekdaySection.style.display = 'block';
+            cronPreview.textContent = '0 9 * * 1';
+            break;
+    }
+}
+
+function runNow() {
+    if (confirm('Run RSS feed processing now?')) {
+        window.location.href = '{{ url_for("run_scheduler_now") }}';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', updateScheduleOptions);
+</script>
+{% endblock %}

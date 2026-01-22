@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Daily News AI Assistant{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enterprise.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-enterprise">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='frb_sf_logo.jpg') }}" alt="FRB SF" height="45" class="me-3">
+                <a class="navbar-brand navbar-brand-enterprise" href="{{ url_for('dashboard') }}">Daily News AI Assistant</a>
+            </div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-enhanced {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-enhanced {% if request.endpoint and 'admin' in request.endpoint %}active{% endif %}" href="{{ url_for('admin') }}">
+                            <i class="bi bi-gear"></i> Admin
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="toast-container"></div>
+
+    <div class="container-fluid px-4 py-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            const iconMap = {
+                success: 'check-circle-fill',
+                error: 'exclamation-triangle-fill',
+                info: 'info-circle-fill',
+                warning: 'exclamation-circle-fill'
+            };
+            const bgMap = {
+                success: 'success',
+                error: 'danger',
+                info: 'info',
+                warning: 'warning'
+            };
+            
+            const toastHTML = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${bgMap[type]} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi bi-${iconMap[type]} me-2"></i>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 4000 });
+            toast.show();
+            toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+        }
+
+        function refreshNews() {
+            showToast('Checking AI connectivity...', 'info');
+            fetch('/refresh_news')
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Connection check failed');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'error') {
+                        showToast(data.message, 'error');
+                    } else {
+                        showToast(data.message, 'success');
+                        // Start progress monitoring if checkProgress exists
+                        if (typeof checkProgress === 'function') {
+                            setTimeout(checkProgress, 500);
+                        } else {
+                            setTimeout(() => location.reload(), 2000);
+                        }
+                    }
+                })
+                .catch(error => {
+                    showToast(error.message || 'Error starting refresh', 'error');
+                });
+        }
+        
+        function clearAllNews() {
+            if (confirm('Are you sure you want to delete ALL articles? This cannot be undone.')) {
+                showToast('Clearing all news...', 'info');
+                fetch('/clear_all_news')
+                    .then(response => response.json())
+                    .then(data => {
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    })
+                    .catch(error => {
+                        showToast('Error clearing news', 'error');
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

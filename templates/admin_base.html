@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+<div class="row">
+    <div class="col-lg-3 mb-4">
+        <div class="modern-sidebar">
+            <div class="breadcrumb-nav mb-2">
+                <a href="{{ url_for('dashboard') }}" class="text-muted text-decoration-none"><i class="bi bi-house-door"></i> Home</a>
+                <span class="text-muted mx-2">/</span>
+                <span class="fw-bold">Admin Panel</span>
+            </div>
+            <h5 class="sidebar-title"><i class="bi bi-gear-fill"></i> Admin Panel</h5>
+            <nav class="nav flex-column">
+                <a class="modern-sidebar-link {% if active_tab == 'feeds' %}active{% endif %}" href="{{ url_for('admin_feeds') }}">
+                    <i class="bi bi-rss-fill"></i> RSS Feeds
+                </a>
+                <a class="modern-sidebar-link {% if active_tab == 'categories' %}active{% endif %}" href="{{ url_for('admin_categories') }}">
+                    <i class="bi bi-folder-fill"></i> Categories
+                </a>
+                <a class="modern-sidebar-link {% if active_tab == 'topics' %}active{% endif %}" href="{{ url_for('admin_topics') }}">
+                    <i class="bi bi-tags-fill"></i> Topics
+                </a>
+                <a class="modern-sidebar-link {% if active_tab == 'scheduler' %}active{% endif %}" href="{{ url_for('admin_scheduler') }}">
+                    <i class="bi bi-clock-fill"></i> Scheduler
+                </a>
+                <a class="modern-sidebar-link {% if active_tab == 'llm' %}active{% endif %}" href="{{ url_for('admin_llm') }}">
+                    <i class="bi bi-cpu-fill"></i> LLM Config
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

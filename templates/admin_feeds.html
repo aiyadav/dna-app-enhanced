@@ -1,0 +1,294 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+
+<!-- Modern Page Header -->
+<div class="modern-page-header animate-in">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1 class="modern-title">
+                        <i class="bi bi-rss-fill"></i> RSS Feeds
+                    </h1>
+                    <p class="modern-subtitle">Manage your news feed sources</p>
+                </div>
+                <button class="btn-modern btn-modern-primary" onclick="showAddModal()">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    Add New Feed
+                </button>
+            </div>
+        </div>
+
+        <!-- Modern Stats Grid -->
+        <div class="modern-stats-grid animate-in">
+            <div class="modern-stat-card" style="--stat-color-1: #3b82f6; --stat-color-2: #2563eb;">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value-modern">{{ feeds|length }}</div>
+                        <div class="stat-label-modern">Total</div>
+                    </div>
+                    <div class="stat-icon-modern">
+                        <i class="bi bi-rss-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modern-stat-card" style="--stat-color-1: #10b981; --stat-color-2: #059669;">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value-modern">{{ feeds|selectattr('active')|list|length }}</div>
+                        <div class="stat-label-modern">Active</div>
+                    </div>
+                    <div class="stat-icon-modern">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modern-stat-card" style="--stat-color-1: #f59e0b; --stat-color-2: #d97706;">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value-modern">{{ feeds|rejectattr('active')|list|length }}</div>
+                        <div class="stat-label-modern">Inactive</div>
+                    </div>
+                    <div class="stat-icon-modern">
+                        <i class="bi bi-pause-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modern-stat-card" style="--stat-color-1: #06b6d4; --stat-color-2: #0891b2;">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value-modern">{{ feeds|selectattr('access_key')|list|length }}</div>
+                        <div class="stat-label-modern">Secured</div>
+                    </div>
+                    <div class="stat-icon-modern">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modern Table Card -->
+        <div class="modern-card animate-in">
+            <div class="modern-card-header">
+                <h2 class="modern-card-title">
+                    <i class="bi bi-table"></i>
+                    Feed Management
+                </h2>
+                <div class="d-flex gap-2 align-items-center" style="flex-wrap: nowrap;">
+                    <div class="modern-search" style="min-width: 250px;">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="searchFeeds" placeholder="Search feeds..." onkeyup="filterFeeds()">
+                    </div>
+                    <select class="form-control-modern" style="width: 150px; flex-shrink: 0;" onchange="filterStatus(this.value)">
+                        <option value="all">All Status</option>
+                        <option value="active">Active Only</option>
+                        <option value="inactive">Inactive Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modern-card-body p-0">
+                {% if feeds %}
+                <div class="modern-table-wrapper">
+                    <table class="modern-table" id="feedsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Feed Details</th>
+                                <th style="width: 35%;">URL</th>
+                                <th style="width: 15%;">Status</th>
+                                <th style="width: 10%;" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feed in feeds %}
+                            <tr data-status="{{ 'active' if feed.active else 'inactive' }}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="stat-icon-modern" style="width: 48px; height: 48px; font-size: 1.2rem; --stat-color-1: #3b82f6; --stat-color-2: #2563eb;">
+                                            <i class="bi bi-rss-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold" style="font-size: 1rem; color: var(--admin-dark);">{{ feed.name }}</div>
+                                            {% if feed.access_key %}
+                                            <small class="badge-modern badge-modern-info mt-1">
+                                                <i class="bi bi-shield-lock-fill"></i> Secured
+                                            </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{{ feed.url }}" target="_blank" class="text-decoration-none" style="color: var(--admin-primary); font-size: 0.9rem;">
+                                        <i class="bi bi-link-45deg"></i>
+                                        <span class="text-truncate d-inline-block" style="max-width: 300px;" title="{{ feed.url }}">
+                                            {{ feed.url }}
+                                        </span>
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if feed.active %}
+                                    <span class="badge-modern badge-modern-success">
+                                        <i class="bi bi-check-circle-fill"></i> Active
+                                    </span>
+                                    {% else %}
+                                    <span class="badge-modern badge-modern-danger">
+                                        <i class="bi bi-x-circle-fill"></i> Inactive
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons justify-content-end">
+                                        <button class="action-btn action-btn-edit" onclick="editFeed({{ feed.id }}, '{{ feed.name }}', '{{ feed.url }}', '{{ feed.access_key or '' }}')" title="Edit">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </button>
+                                        <a href="{{ url_for('toggle_feed', feed_id=feed.id) }}" class="action-btn action-btn-toggle" title="Toggle">
+                                            <i class="bi bi-{% if feed.active %}pause{% else %}play{% endif %}-fill"></i>
+                                        </a>
+                                        <button class="action-btn action-btn-delete" onclick="confirmDelete({{ feed.id }}, '{{ feed.name }}')" title="Delete">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="modern-empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h3>No Feeds Yet</h3>
+                    <p>Start by adding your first RSS feed source</p>
+                    <button class="btn-modern btn-modern-primary" onclick="showAddModal()">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        Add Your First Feed
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+<!-- Modern Add/Edit Modal -->
+<div class="modal fade" id="feedModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="bi bi-plus-circle-fill"></i> Add New Feed
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="feedForm" method="POST" action="{{ url_for('add_feed') }}">
+                <div class="modal-body modal-body-modern">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label-modern">Feed Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control-modern" name="name" id="feedName" required placeholder="e.g., TechCrunch">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-modern">Access Key <span class="text-muted">(Optional)</span></label>
+                            <input type="text" class="form-control-modern" name="access_key" id="feedAccessKey" placeholder="API Key">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label-modern">RSS Feed URL <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control-modern" name="url" id="feedUrl" required placeholder="https://example.com/feed.xml">
+                            <small class="text-muted">Enter the complete RSS/Atom feed URL</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-modern">
+                    <button type="button" class="btn-modern btn-modern-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-modern btn-modern-primary">
+                        <i class="bi bi-check-circle-fill"></i> Save Feed
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-modern">
+                <p style="font-size: 1.05rem;">Are you sure you want to delete <strong id="deleteFeedName"></strong>?</p>
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-0">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>This action cannot be undone.</span>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-modern">
+                <button type="button" class="btn-modern btn-modern-outline" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDeleteBtn" class="btn-modern btn-modern-danger">
+                    <i class="bi bi-trash-fill"></i> Yes, Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let feedModal, deleteModal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    feedModal = new bootstrap.Modal(document.getElementById('feedModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+});
+
+function showAddModal() {
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-circle-fill"></i> Add New Feed';
+    document.getElementById('feedForm').action = '{{ url_for("add_feed") }}';
+    document.getElementById('feedName').value = '';
+    document.getElementById('feedUrl').value = '';
+    document.getElementById('feedAccessKey').value = '';
+    feedModal.show();
+}
+
+function editFeed(id, name, url, accessKey) {
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-fill"></i> Edit Feed';
+    document.getElementById('feedForm').action = `/edit_feed/${id}`;
+    document.getElementById('feedName').value = name;
+    document.getElementById('feedUrl').value = url;
+    document.getElementById('feedAccessKey').value = accessKey;
+    feedModal.show();
+}
+
+function confirmDelete(id, name) {
+    document.getElementById('deleteFeedName').textContent = name;
+    document.getElementById('confirmDeleteBtn').href = `/delete_feed/${id}`;
+    deleteModal.show();
+}
+
+function filterFeeds() {
+    const searchTerm = document.getElementById('searchFeeds').value.toLowerCase();
+    const rows = document.querySelectorAll('#feedsTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+}
+
+function filterStatus(status) {
+    const rows = document.querySelectorAll('#feedsTable tbody tr');
+    rows.forEach(row => {
+        if (status === 'all') {
+            row.style.display = '';
+        } else {
+            row.style.display = row.dataset.status === status ? '' : 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

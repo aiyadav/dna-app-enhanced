@@ -1,0 +1,383 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+
+<!-- Modern Page Header -->
+<div class="modern-page-header animate-in">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="modern-title">
+                <i class="bi bi-cpu-fill"></i> LLM Configuration
+            </h1>
+            <p class="modern-subtitle">Configure AI models for intelligent article summarization</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn-modern btn-modern-outline" onclick="showProviderInfo()">
+                <i class="bi bi-info-circle"></i> Provider Guide
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Compact Stats Grid -->
+<div class="modern-stats-grid animate-in">
+    <div class="modern-stat-card" style="--stat-color-1: #3b82f6; --stat-color-2: #2563eb;">
+        <div class="stat-header">
+            <div>
+                <div class="stat-label-modern">Provider</div>
+                <div class="stat-value-modern" style="font-size: 1.25rem;">{{ config.get('llm_provider', 'bedrock_iam').replace('_', ' ').title() }}</div>
+            </div>
+            <div class="stat-icon-modern">
+                <i class="bi bi-cloud-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-stat-card" style="--stat-color-1: #10b981; --stat-color-2: #059669;">
+        <div class="stat-header">
+            <div>
+                <div class="stat-label-modern">Model</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: var(--admin-dark);">{{ config.get('llm_model', 'claude-3-haiku').split('.')[-1].split('-')[0:3]|join(' ')|title }}</div>
+            </div>
+            <div class="stat-icon-modern">
+                <i class="bi bi-cpu-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-stat-card" style="--stat-color-1: #f59e0b; --stat-color-2: #d97706;">
+        <div class="stat-header">
+            <div>
+                <div class="stat-label-modern">Auth</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: var(--admin-dark);">
+                    {% if config.get('llm_provider') in ['openai', 'anthropic', 'custom', 'bedrock_api'] %}
+                    API Key
+                    {% else %}
+                    IAM Role
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-icon-modern">
+                <i class="bi bi-shield-check-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuration Form Card -->
+<div class="modern-card animate-in">
+    <div class="modern-card-header">
+        <h2 class="modern-card-title">
+            <i class="bi bi-sliders"></i>
+            Provider Configuration
+        </h2>
+    </div>
+    <div class="modern-card-body">
+        <form method="POST" action="{{ url_for('update_llm_config') }}" id="llmConfigForm">
+            
+            <div class="row g-4">
+                
+                <!-- Provider Selection -->
+                <div class="col-md-6">
+                    <label class="form-label-modern">
+                        <i class="bi bi-cloud-fill"></i> AI Provider
+                    </label>
+                    <select class="form-control-modern" name="llm_provider" id="llm_provider" required onchange="toggleAuthMethod()">
+                        <option value="bedrock_iam" {% if config.get('llm_provider')=='bedrock_iam' or not config.get('llm_provider') %}selected{% endif %}>🔐 AWS Bedrock - IAM Authentication</option>
+                        <option value="bedrock_api" {% if config.get('llm_provider')=='bedrock_api' %}selected{% endif %}>🔑 AWS Bedrock - API Key</option>
+                        <option value="openai" {% if config.get('llm_provider')=='openai' %}selected{% endif %}>🤖 OpenAI</option>
+                        <option value="anthropic" {% if config.get('llm_provider')=='anthropic' %}selected{% endif %}>🧠 Anthropic Claude</option>
+                        <option value="custom" {% if config.get('llm_provider')=='custom' %}selected{% endif %}>⚙️ Custom Provider (OpenAI Compatible)</option>
+                    </select>
+                </div>
+
+                <!-- Bedrock Model Selection -->
+                <div class="col-md-6" id="bedrock_model_section" style="display:none;">
+                    <label class="form-label-modern">
+                        <i class="bi bi-cpu-fill"></i> Model
+                    </label>
+                    <select class="form-control-modern" name="llm_model" id="bedrock_model">
+                        <option value="anthropic.claude-3-haiku-20240307-v1:0" {% if config.get('llm_model')=='anthropic.claude-3-haiku-20240307-v1:0' or not config.get('llm_model') %}selected{% endif %}>Claude 3 Haiku (Recommended)</option>
+                        <option value="anthropic.claude-3-sonnet-20240229-v1:0" {% if config.get('llm_model')=='anthropic.claude-3-sonnet-20240229-v1:0' %}selected{% endif %}>Claude 3 Sonnet</option>
+                        <option value="anthropic.claude-3-5-sonnet-20240620-v1:0" {% if config.get('llm_model')=='anthropic.claude-3-5-sonnet-20240620-v1:0' %}selected{% endif %}>Claude 3.5 Sonnet</option>
+                    </select>
+                </div>
+
+                <!-- Custom Model -->
+                <div class="col-md-6" id="custom_model_section" style="display:none;">
+                    <label class="form-label-modern">
+                        <i class="bi bi-cpu"></i> Model ID
+                    </label>
+                    <input type="text" class="form-control-modern" name="llm_model_custom" id="custom_model"
+                        value="{{ config.get('llm_model', '') }}" placeholder="gpt-4o-mini">
+                </div>
+
+                <!-- API Key -->
+                <div class="col-md-6" id="api_key_section" style="display:none;">
+                    <label class="form-label-modern">
+                        <i class="bi bi-key-fill"></i> API Key
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input type="password" class="form-control-modern" name="llm_api_key" id="llm_api_key"
+                            value="{{ config.get('llm_api_key', '') }}"
+                            placeholder="Enter your API key" style="border-radius: 0 12px 12px 0;">
+                    </div>
+                </div>
+
+                <!-- API Base -->
+                <div class="col-md-6" id="api_base_section" style="display:none;">
+                    <label class="form-label-modern">
+                        <i class="bi bi-link-45deg"></i> API Base URL
+                    </label>
+                    <input type="text" class="form-control-modern" name="llm_api_base" id="llm_api_base"
+                        value="{{ config.get('llm_api_base', '') }}" placeholder="https://api.openai.com/v1">
+                </div>
+
+                <!-- Test Connection Button -->
+                <div class="col-12">
+                    <button type="button" class="btn-modern btn-modern-outline" onclick="testConnection()" id="test_connection_btn">
+                        <i class="bi bi-plug-fill"></i> Test Connection
+                    </button>
+                    <div id="test_result" class="mt-3"></div>
+                </div>
+
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn-modern btn-modern-primary">
+                    <i class="bi bi-check-circle-fill"></i> Save Configuration
+                </button>
+                <button type="button" class="btn-modern btn-modern-outline" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleAuthMethod() {
+    const provider = document.getElementById('llm_provider').value;
+    const apiKeySection = document.getElementById('api_key_section');
+    const bedrockModelSection = document.getElementById('bedrock_model_section');
+    const customModelSection = document.getElementById('custom_model_section');
+    const apiBaseSection = document.getElementById('api_base_section');
+    
+    // Hide all sections first
+    apiKeySection.style.display = 'none';
+    bedrockModelSection.style.display = 'none';
+    customModelSection.style.display = 'none';
+    apiBaseSection.style.display = 'none';
+    
+    // Show relevant sections based on provider
+    if (provider === 'bedrock_iam') {
+        bedrockModelSection.style.display = 'block';
+    } else if (provider === 'bedrock_api') {
+        apiKeySection.style.display = 'block';
+        bedrockModelSection.style.display = 'block';
+    } else if (provider === 'openai' || provider === 'anthropic') {
+        apiKeySection.style.display = 'block';
+        customModelSection.style.display = 'block';
+    } else if (provider === 'custom') {
+        apiKeySection.style.display = 'block';
+        customModelSection.style.display = 'block';
+        apiBaseSection.style.display = 'block';
+    }
+}
+
+function testConnection() {
+    const testBtn = document.getElementById('test_connection_btn');
+    const testResult = document.getElementById('test_result');
+    const provider = document.getElementById('llm_provider').value;
+    const bedrockModel = document.getElementById('bedrock_model');
+    const customModel = document.getElementById('custom_model');
+    const apiKey = document.getElementById('llm_api_key');
+    
+    // Validate based on provider
+    if (provider === 'bedrock_iam' || provider === 'bedrock_api') {
+        if (!bedrockModel || !bedrockModel.value) {
+            testResult.innerHTML = `
+                <div class="alert alert-warning d-flex align-items-start gap-2">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <div>
+                        <strong>Warning:</strong><br>
+                        <small>Please select a model first</small>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+    } else {
+        if (!apiKey || !apiKey.value) {
+            testResult.innerHTML = `
+                <div class="alert alert-warning d-flex align-items-start gap-2">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <div>
+                        <strong>Warning:</strong><br>
+                        <small>Please enter API key first</small>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+    }
+    
+    testBtn.disabled = true;
+    testBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Testing...';
+    testResult.innerHTML = '';
+    
+    // For Bedrock, use existing endpoint
+    if (provider === 'bedrock_iam' || provider === 'bedrock_api') {
+        fetch('/test_bedrock_connection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ model_id: bedrockModel.value })
+        })
+        .then(response => response.json())
+        .then(data => {
+            testBtn.disabled = false;
+            testBtn.innerHTML = '<i class="bi bi-plug-fill"></i> Test Connection';
+            
+            if (data.success) {
+                testResult.innerHTML = `
+                    <div class="alert alert-success d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                        <div>
+                            <strong>Success!</strong><br>
+                            <small>${data.message.replace(/\n/g, '<br>')}</small>
+                        </div>
+                    </div>
+                `;
+            } else {
+                testResult.innerHTML = `
+                    <div class="alert alert-danger d-flex align-items-start gap-2">
+                        <i class="bi bi-x-circle-fill fs-5"></i>
+                        <div>
+                            <strong>Connection Failed</strong><br>
+                            <small>${data.message.replace(/\n/g, '<br>')}</small>
+                        </div>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            testBtn.disabled = false;
+            testBtn.innerHTML = '<i class="bi bi-plug-fill"></i> Test Connection';
+            testResult.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-start gap-2">
+                    <i class="bi bi-x-circle-fill fs-5"></i>
+                    <div>
+                        <strong>Error:</strong><br>
+                        <small>${error.message}</small>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        // For other providers, show info message
+        testBtn.disabled = false;
+        testBtn.innerHTML = '<i class="bi bi-plug-fill"></i> Test Connection';
+        testResult.innerHTML = `
+            <div class="alert alert-info d-flex align-items-start gap-2">
+                <i class="bi bi-info-circle-fill fs-5"></i>
+                <div>
+                    <strong>Note:</strong><br>
+                    <small>Test connection for ${provider} will be validated when you save and use the configuration. Make sure your API key is correct.</small>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', toggleAuthMethod);
+</script>
+
+<style>
+.model-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+}
+
+.model-option {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: block;
+}
+
+.model-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.model-option:hover {
+    border-color: var(--admin-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.model-option:has(input[type="radio"]:checked) {
+    border-color: var(--admin-primary);
+    background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+    box-shadow: var(--shadow-md);
+}
+
+.model-option:has(input[type="radio"]:checked) .model-option-name,
+.model-option:has(input[type="radio"]:checked) .model-option-desc {
+    color: white;
+}
+
+.model-option-content {
+    text-align: center;
+}
+
+.model-option-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--admin-dark);
+    margin-bottom: 0.25rem;
+}
+
+.model-option-desc {
+    font-size: 0.75rem;
+    color: var(--admin-text-light);
+    margin-bottom: 0.5rem;
+}
+
+.model-option-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.model-option:has(input[type="radio"]:checked) .model-option-badge {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.input-group-text {
+    background: linear-gradient(135deg, #f8fafc 0%, #e9ecef 100%);
+    border: 2px solid var(--admin-border);
+    border-right: none;
+    border-radius: 12px 0 0 12px;
+    color: var(--admin-primary);
+}
+
+.input-group .form-control-modern {
+    border-left: none;
+}
+</style>
+
+{% endblock %}

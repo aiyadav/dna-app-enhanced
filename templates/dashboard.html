@@ -1,0 +1,949 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="breadcrumb-nav mb-2">
+            <span class="text-muted"><i class="bi bi-house-door"></i> Home</span>
+            <span class="text-muted mx-2">/</span>
+            <span class="fw-bold">Dashboard</span>
+        </div>
+        <h1 class="page-title"><i class="bi bi-newspaper"></i> RSS News Summary</h1>
+        {% if last_refresh %}
+        <small class="text-muted">
+            <i class="bi bi-clock-history"></i> Last updated: {{ last_refresh.strftime('%b %d, %Y at %H:%M:%S') }}
+        </small>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+        <button onclick="refreshNews()" class="btn btn-primary btn-enterprise" id="refreshBtn">
+            <i class="bi bi-arrow-clockwise"></i> Refresh News
+        </button>
+        <div class="vr" style="height: 30px;"></div>
+        <a href="{{ url_for('generate_markdown') }}" class="btn btn-outline-secondary btn-enterprise">
+            <i class="bi bi-file-earmark-text"></i> Export MD
+        </a>
+        <a href="{{ url_for('generate_html') }}" class="btn btn-outline-secondary btn-enterprise">
+            <i class="bi bi-file-earmark-code"></i> Export HTML
+        </a>
+        <div class="vr" style="height: 30px;"></div>
+        <div class="dropdown">
+            <button class="btn btn-outline-danger btn-enterprise dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-gear-fill"></i> Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item text-danger" href="#" onclick="showClearConfirmation(); return false;">
+                    <i class="bi bi-trash"></i> Clear All Articles
+                </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card-enterprise mb-4">
+    <div class="card-body">
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search articles by title, content, or author..." onkeyup="filterArticles()">
+                    <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()" title="Clear search">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="categoryFilter" onchange="filterArticles()">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.name }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="sortBy" onchange="sortArticles()">
+                    <option value="relevance">Sort by Relevance</option>
+                    <option value="date-desc">Newest First</option>
+                    <option value="date-asc">Oldest First</option>
+                </select>
+            </div>
+        </div>
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <button class="btn btn-sm btn-outline-primary" id="todayBtn" onclick="filterByTime('today')">
+                    <i class="bi bi-calendar-day"></i> Today
+                </button>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-sm btn-outline-primary" id="weekBtn" onclick="filterByTime('week')">
+                    <i class="bi bi-calendar-week"></i> This Week
+                </button>
+            </div>
+            <div class="col-auto">
+                <div class="input-group input-group-sm" style="width: auto;">
+                    <input type="date" class="form-control form-control-sm" id="startDate" style="width: 140px;">
+                    <span class="input-group-text">to</span>
+                    <input type="date" class="form-control form-control-sm" id="endDate" style="width: 140px;">
+                    <button class="btn btn-outline-primary" onclick="filterByCustomDate()" title="Apply custom date range">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-sm btn-outline-secondary" onclick="clearAllFilters()" title="Clear all filters">
+                    <i class="bi bi-x-circle"></i> Clear
+                </button>
+            </div>
+            <div class="col-auto ms-auto">
+                <span class="badge bg-secondary" id="resultCount">{{ total_articles }} articles</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if articles %}
+<!-- Active Filter Indicator -->
+<div id="filterIndicator" class="alert alert-info mb-4" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <i class="bi bi-funnel-fill me-2"></i>
+            <strong>Showing articles:</strong> <span id="filterText"></span>
+        </div>
+        <button type="button" class="btn-close" onclick="clearAllFilters()"></button>
+    </div>
+</div>
+<div id="progress-monitor" class="card-enterprise mb-4" style="display: none;">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Processing News Feeds...</h5>
+            <button type="button" class="btn-close" onclick="document.getElementById('progress-monitor').style.display='none'"></button>
+        </div>
+        <div class="progress progress-enterprise mb-2">
+            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+        </div>
+        <div id="progress-status" class="small text-muted">Initializing...</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="summary-sidebar">
+            <!-- Enhanced Stats Cards -->
+            <div class="row g-3 mb-3">
+                <div class="col-12">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ total_articles }}</div>
+                        <div class="stats-label">Total Articles</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats Grid -->
+            <div class="card-enterprise mb-3">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill"></i> Quick Stats</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="quick-stat-item">
+                                <div class="quick-stat-number">{{ categories | length }}</div>
+                                <div class="quick-stat-label">Categories</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="quick-stat-item">
+                                <div class="quick-stat-number">{{ articles | selectattr('relevancy_score') | list | length }}</div>
+                                <div class="quick-stat-label">Scored</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Category Distribution Chart -->
+            <div class="card-enterprise mb-3">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart"></i> Category Distribution</h6>
+                    <canvas id="categoryChart" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="card-enterprise">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-folder"></i> Categories</h5>
+                    <div class="d-grid gap-2">
+                        {% for category in categories %}
+                        {% if category.name in category_stats %}
+                        <a href="#category-{{ category.name | slugify }}" class="category-list-item text-decoration-none" style="border-left: 4px solid {{ category.color }};">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-500">{{ category.name }}</span>
+                                <span class="badge badge-enterprise" style="background-color: {{ category.color }};">{{ category_stats[category.name] }}</span>
+                            </div>
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% set uncategorized_count = articles | rejectattr('category_name') | list | length %}
+                        {% if uncategorized_count > 0 %}
+                        <a href="#category-uncategorized" class="category-list-item text-decoration-none" style="border-left: 4px solid #6c757d;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-500">Uncategorized</span>
+                                <span class="badge badge-enterprise bg-secondary">{{ uncategorized_count }}</span>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+                    {% set ns = namespace(processed_categories=[]) %}
+                    {% for category in categories %}
+                    {% if category.name in category_stats %}
+                    {% set category_articles = articles | selectattr('category_name', 'equalto', category.name) | list
+                    %}
+                    {% if category_articles %}
+
+                    <div id="category-{{ category.name | slugify }}" class="category-header" style="border-left-color: {{ category.color }};">
+                        <h2 class="category-title" style="color: {{ category.color }};"><i class="bi bi-folder-fill"></i> {{ category.name }}</h2>
+                    </div>
+
+                    {% for article in category_articles %}
+                    <div class="article-card">
+                        <h3 class="mb-3">
+                            <a href="{{ article.url }}" target="_blank" class="article-title">
+                                {{ article.title }}
+                            </a>
+                        </h3>
+                        <div class="article-meta mb-3">
+                            <span class="feed-badge">
+                                <i class="bi bi-rss-fill"></i> {{ article.feed.name if article.feed else 'Unknown' }}
+                            </span>
+                            <span class="meta-divider"></span>
+                            <span><i class="bi bi-person-circle"></i> {{ article.author or 'Unknown' }}</span>
+                            <span class="meta-divider"></span>
+                            <span><i class="bi bi-calendar-event"></i> {{ article.published_date.strftime('%b %d, %Y at %H:%M') }}</span>
+                        </div>
+
+                        {% if article.summary %}
+                        <div class="mb-3">
+                            <div class="summary-content">
+                                {% for line in article.summary.split('\n') %}
+                                {% if line.strip().startswith('**') %}
+                                <h5 class="mt-3 mb-2 fw-bold">{{ line.replace('**', '').replace(':', '') }}</h5>
+                                {% elif line.strip().startswith('•') %}
+                                <div class="d-flex mb-1">
+                                    <span class="me-2">•</span>
+                                    <span>{{ line.strip()[1:].strip() }}</span>
+                                </div>
+                                {% elif line.strip().startswith('> "') %}
+                                <figure class="bg-light p-3 border-start border-4 border-primary rounded mb-2">
+                                    <blockquote class="blockquote mb-0" style="font-size: 0.95em;">
+                                        <p class="mb-0">{{ line.strip()[2:-1] }}</p>
+                                    </blockquote>
+                                </figure>
+                                {% elif line.strip() %}
+                                <p class="mb-2">{{ line.strip() }}</p>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="action-toolbar">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="badge badge-enterprise" style="background-color: {{ category.color }};">{{ category.name }}</span>
+                                {% if article.relevancy_score is not none %}
+                                <span class="badge badge-enterprise bg-light text-dark border"><i class="bi bi-graph-up"></i> {{ article.relevancy_score }}%</span>
+                                {% endif %}
+                                <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary btn-enterprise">
+                                    <i class="bi bi-box-arrow-up-right"></i> Read
+                                </a>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editSummary('{{ article.id }}')" title="Edit Summary">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success {% if article.user_feedback == 1 %}active{% endif %}" onclick="rateArticle('{{ article.id }}', 1)" id="like-{{ article.id }}" title="Like">
+                                    <i class="bi bi-hand-thumbs-up{% if article.user_feedback == 1 %}-fill{% endif %}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger {% if article.user_feedback == -1 %}active{% endif %}" onclick="rateArticle('{{ article.id }}', -1)" id="dislike-{{ article.id }}" title="Dislike">
+                                    <i class="bi bi-hand-thumbs-down{% if article.user_feedback == -1 %}-fill{% endif %}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden textarea for raw summary content to populate modal -->
+                    <textarea id="raw-summary-{{ article.id }}" style="display: none;">{{ article.summary }}</textarea>
+                    {% endfor %}
+                    {% set _ = ns.processed_categories.append(category.name) %}
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+
+                    {% set uncategorized = articles | rejectattr('category_name') | list %}
+                    {% if uncategorized %}
+                    <div id="category-uncategorized" class="category-header" style="border-left-color: #6c757d;">
+                        <h2 class="category-title" style="color: #6c757d;"><i class="bi bi-question-circle-fill"></i> Uncategorized</h2>
+                    </div>
+
+                    {% for article in uncategorized %}
+                    <div class="article-card">
+                        <h3 class="mb-3">
+                            <a href="{{ article.url }}" target="_blank" class="article-title">
+                                {{ article.title }}
+                            </a>
+                        </h3>
+                        <div class="article-meta mb-3">
+                            <span class="feed-badge">
+                                <i class="bi bi-rss-fill"></i> {{ article.feed.name if article.feed else 'Unknown' }}
+                            </span>
+                            <span class="meta-divider"></span>
+                            <span><i class="bi bi-person-circle"></i> {{ article.author or 'Unknown' }}</span>
+                            <span class="meta-divider"></span>
+                            <span><i class="bi bi-calendar-event"></i> {{ article.published_date.strftime('%b %d, %Y at %H:%M') }}</span>
+                        </div>
+
+                        {% if article.summary %}
+                        <div class="mb-3">
+                            <div class="summary-content">
+                                {% for line in article.summary.split('\n') %}
+                                {% if line.strip().startswith('**') %}
+                                <h5 class="mt-3 mb-2 fw-bold">{{ line.replace('**', '').replace(':', '') }}</h5>
+                                {% elif line.strip().startswith('•') %}
+                                <div class="d-flex mb-1">
+                                    <span class="me-2">•</span>
+                                    <span>{{ line.strip()[1:].strip() }}</span>
+                                </div>
+                                {% elif line.strip().startswith('> "') %}
+                                <figure class="bg-light p-3 border-start border-4 border-primary rounded mb-2">
+                                    <blockquote class="blockquote mb-0" style="font-size: 0.95em;">
+                                        <p class="mb-0">{{ line.strip()[2:-1] }}</p>
+                                    </blockquote>
+                                </figure>
+                                {% elif line.strip() %}
+                                <p class="mb-2">{{ line.strip() }}</p>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="action-toolbar">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                {% if article.relevancy_score is not none %}
+                                <span class="badge badge-enterprise bg-light text-dark border"><i class="bi bi-graph-up"></i> {{ article.relevancy_score }}%</span>
+                                {% endif %}
+                                <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary btn-enterprise">
+                                    <i class="bi bi-box-arrow-up-right"></i> Read
+                                </a>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editSummary('{{ article.id }}')" title="Edit Summary">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success {% if article.user_feedback == 1 %}active{% endif %}" onclick="rateArticle('{{ article.id }}', 1)" id="like-{{ article.id }}" title="Like">
+                                    <i class="bi bi-hand-thumbs-up{% if article.user_feedback == 1 %}-fill{% endif %}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger {% if article.user_feedback == -1 %}active{% endif %}" onclick="rateArticle('{{ article.id }}', -1)" id="dislike-{{ article.id }}" title="Dislike">
+                                    <i class="bi bi-hand-thumbs-down{% if article.user_feedback == -1 %}-fill{% endif %}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden textarea for raw summary content to populate modal -->
+                    <textarea id="raw-summary-{{ article.id }}" style="display: none;">{{ article.summary }}</textarea>
+                    {% endfor %}
+                    {% endif %}
+    </div>
+</div>
+{% else %}
+<div id="progress-monitor" class="card-enterprise mb-4" style="display: none;">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Processing News Feeds...</h5>
+            <button type="button" class="btn-close" onclick="document.getElementById('progress-monitor').style.display='none'"></button>
+        </div>
+        <div class="progress progress-enterprise mb-2">
+            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+        </div>
+        <div id="progress-status" class="small text-muted">Initializing...</div>
+    </div>
+</div>
+<div class="card-enterprise text-center py-5">
+    <div class="card-body">
+        <i class="bi bi-inbox" style="font-size: 4rem; color: #6c757d;"></i>
+        <h4 class="mt-3">No Articles Found</h4>
+        <p class="text-muted">Add RSS feeds and topics in the Admin panel, then refresh to get started.</p>
+        <a href="{{ url_for('admin') }}" class="btn btn-primary btn-enterprise mt-2">
+            <i class="bi bi-gear"></i> Go to Admin Panel
+        </a>
+    </div>
+</div>
+            <script>
+                // Progress monitoring for empty dashboard
+                function checkProgress() {
+                    fetch('/processing_status')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.processing) {
+                                document.getElementById('progress-monitor').style.display = 'block';
+                                const percent = Math.round((data.processed / data.total) * 100) || 0;
+                                document.getElementById('progress-bar').style.width = percent + '%';
+                                document.getElementById('progress-bar').textContent = percent + '%';
+                                document.getElementById('progress-status').innerHTML = 
+                                    `<strong>${data.processed}</strong> of <strong>${data.total}</strong> articles processed | 
+                                    <strong>${data.saved}</strong> saved | 
+                                    Current: ${data.current_article || 'Initializing...'}`;
+                                setTimeout(checkProgress, 500);
+                            } else if (document.getElementById('progress-monitor').style.display === 'block') {
+                                location.reload();
+                            }
+                        });
+                }
+                setTimeout(checkProgress, 500);
+            </script>
+{% endif %}
+
+<script>
+    // Progress monitoring
+    function checkProgress() {
+        fetch('/processing_status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.processing) {
+                    document.getElementById('progress-monitor').style.display = 'block';
+                    const percent = Math.round((data.processed / data.total) * 100) || 0;
+                    document.getElementById('progress-bar').style.width = percent + '%';
+                    document.getElementById('progress-bar').textContent = percent + '%';
+                    document.getElementById('progress-status').innerHTML = 
+                        `<strong>${data.processed}</strong> of <strong>${data.total}</strong> articles processed | 
+                        <strong>${data.saved}</strong> saved | 
+                        Current: ${data.current_article || 'Initializing...'}`;
+                    setTimeout(checkProgress, 500);
+                } else if (document.getElementById('progress-monitor').style.display === 'block') {
+                    location.reload();
+                }
+            });
+    }
+    
+    // Start checking on page load
+    setTimeout(checkProgress, 500);
+
+    // Refresh News with loading state
+    function refreshNews() {
+        const btn = document.getElementById('refreshBtn');
+        const originalHTML = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+        
+        fetch('/refresh_news')
+            .then(response => response.json())
+            .then(data => {
+                showToast('News refresh started. Processing articles...', 'info');
+                setTimeout(checkProgress, 500);
+            })
+            .catch(error => {
+                showToast('Error starting refresh', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            });
+    }
+
+    // Show confirmation modal for clear all
+    function showClearConfirmation() {
+        const modal = new bootstrap.Modal(document.getElementById('clearConfirmModal'));
+        modal.show();
+    }
+
+    // Clear all articles with proper confirmation
+    function confirmClearAll() {
+        const btn = document.getElementById('confirmClearBtn');
+        const originalHTML = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Clearing...';
+        
+        fetch('/clear_all_news')
+            .then(response => response.json())
+            .then(data => {
+                showToast(data.message, 'success');
+                bootstrap.Modal.getInstance(document.getElementById('clearConfirmModal')).hide();
+                setTimeout(() => location.reload(), 1500);
+            })
+            .catch(error => {
+                showToast('Error clearing articles', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            });
+    }
+
+
+    // Smooth scroll to category sections
+    document.querySelectorAll('a[href^="#category-"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const target = document.getElementById(targetId);
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Edit Summary Modal Logic
+    let currentArticleId = null;
+
+    function editSummary(articleId) {
+        currentArticleId = articleId;
+        const rawSummary = document.getElementById(`raw-summary-${articleId}`).value;
+        document.getElementById('editSummaryText').value = rawSummary;
+        const editModal = new bootstrap.Modal(document.getElementById('editSummaryModal'));
+        editModal.show();
+    }
+
+    function saveSummary() {
+        if (!currentArticleId) return;
+
+        const newSummary = document.getElementById('editSummaryText').value;
+
+        fetch(`/update_summary/${currentArticleId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ summary: newSummary })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Reload to show formatted changes
+                } else {
+                    alert('Error updating summary: ' + data.message);
+                }
+            });
+    }
+
+    // Feedback Logic
+    function rateArticle(articleId, feedback) {
+        const likeBtn = document.getElementById(`like-${articleId}`);
+        const dislikeBtn = document.getElementById(`dislike-${articleId}`);
+
+        // Toggle logic: if clicking active button, remove feedback (set to 0)
+        let newFeedback = feedback;
+        if ((feedback === 1 && likeBtn.classList.contains('active')) ||
+            (feedback === -1 && dislikeBtn.classList.contains('active'))) {
+            newFeedback = 0;
+        }
+
+        fetch(`/rate_article/${articleId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ feedback: newFeedback })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI visually without reload
+                    likeBtn.classList.remove('active', 'btn-success');
+                    likeBtn.classList.add('btn-outline-success');
+                    likeBtn.querySelector('i').classList.replace('bi-hand-thumbs-up-fill', 'bi-hand-thumbs-up');
+
+                    dislikeBtn.classList.remove('active', 'btn-danger');
+                    dislikeBtn.classList.add('btn-outline-danger');
+                    dislikeBtn.querySelector('i').classList.replace('bi-hand-thumbs-down-fill', 'bi-hand-thumbs-down');
+
+                    if (newFeedback === 1) {
+                        likeBtn.classList.add('active', 'btn-success');
+                        likeBtn.classList.remove('btn-outline-success');
+                        likeBtn.querySelector('i').classList.replace('bi-hand-thumbs-up', 'bi-hand-thumbs-up-fill');
+                    } else if (newFeedback === -1) {
+                        dislikeBtn.classList.add('active', 'btn-danger');
+                        dislikeBtn.classList.remove('btn-outline-danger');
+                        dislikeBtn.querySelector('i').classList.replace('bi-hand-thumbs-down', 'bi-hand-thumbs-down-fill');
+                    }
+                } else {
+                    alert('Error submitting feedback: ' + data.message);
+                }
+            });
+    }
+
+    // Search and Filter functionality
+    function filterArticles() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        const articles = document.querySelectorAll('.article-card');
+        let visibleCount = 0;
+        
+        articles.forEach(article => {
+            const title = article.querySelector('.article-title').textContent.toLowerCase();
+            const content = article.querySelector('.summary-content')?.textContent.toLowerCase() || '';
+            const author = article.querySelector('.article-meta').textContent.toLowerCase();
+            const categoryBadge = article.querySelector('.badge-enterprise')?.textContent || '';
+            
+            const matchesSearch = title.includes(searchTerm) || content.includes(searchTerm) || author.includes(searchTerm);
+            const matchesCategory = !categoryFilter || categoryBadge.includes(categoryFilter);
+            
+            if (matchesSearch && matchesCategory) {
+                article.style.display = 'block';
+                visibleCount++;
+            } else {
+                article.style.display = 'none';
+            }
+        });
+        
+        updateResultCount(visibleCount);
+        showNoResultsMessage(visibleCount === 0);
+    }
+    
+    function clearSearch() {
+        clearAllFilters();
+    }
+    
+    let activeTimeFilter = null;
+    
+    function showFilterIndicator(text) {
+        const indicator = document.getElementById('filterIndicator');
+        const filterText = document.getElementById('filterText');
+        if (indicator && filterText) {
+            filterText.textContent = text;
+            indicator.style.display = 'block';
+        }
+    }
+    
+    function hideFilterIndicator() {
+        const indicator = document.getElementById('filterIndicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+    
+    function filterByTime(period) {
+        // Reset all button states
+        document.getElementById('todayBtn').classList.remove('btn-primary');
+        document.getElementById('todayBtn').classList.add('btn-outline-primary');
+        document.getElementById('weekBtn').classList.remove('btn-primary');
+        document.getElementById('weekBtn').classList.add('btn-outline-primary');
+        
+        // Set active button
+        const activeBtn = period === 'today' ? 'todayBtn' : 'weekBtn';
+        document.getElementById(activeBtn).classList.remove('btn-outline-primary');
+        document.getElementById(activeBtn).classList.add('btn-primary');
+        
+        activeTimeFilter = period;
+        
+        const articles = document.querySelectorAll('.article-card');
+        const now = new Date();
+        now.setHours(0, 0, 0, 0); // Start of today
+        let visibleCount = 0;
+        
+        // Format date for display
+        const todayStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        articles.forEach(article => {
+            const dateText = article.querySelector('.article-meta').textContent;
+            const dateMatch = dateText.match(/([A-Z][a-z]{2} \d{1,2}, \d{4})/);
+            if (!dateMatch) {
+                article.style.display = 'none';
+                return;
+            }
+            
+            const articleDate = new Date(dateMatch[1]);
+            articleDate.setHours(0, 0, 0, 0);
+            let show = false;
+            
+            if (period === 'today') {
+                show = articleDate.getTime() === now.getTime();
+            } else if (period === 'week') {
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                show = articleDate >= weekAgo;
+            }
+            
+            if (show) {
+                article.style.display = 'block';
+                visibleCount++;
+            } else {
+                article.style.display = 'none';
+            }
+        });
+        
+        // Show filter indicator
+        if (period === 'today') {
+            showFilterIndicator(`Today (${todayStr})`);
+        } else if (period === 'week') {
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const weekAgoStr = weekAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            showFilterIndicator(`Last 7 days (${weekAgoStr} - ${todayStr})`);
+        }
+        
+        updateResultCount(visibleCount);
+        showNoResultsMessage(visibleCount === 0);
+    }
+    
+    function filterByCustomDate() {
+        const startDateInput = document.getElementById('startDate').value;
+        const endDateInput = document.getElementById('endDate').value;
+        
+        if (!startDateInput || !endDateInput) {
+            alert('Please select both start and end dates');
+            return;
+        }
+        
+        // Reset preset button states
+        document.getElementById('todayBtn').classList.remove('btn-primary');
+        document.getElementById('todayBtn').classList.add('btn-outline-primary');
+        document.getElementById('weekBtn').classList.remove('btn-primary');
+        document.getElementById('weekBtn').classList.add('btn-outline-primary');
+        
+        activeTimeFilter = 'custom';
+        
+        const startDate = new Date(startDateInput);
+        const endDate = new Date(endDateInput);
+        endDate.setHours(23, 59, 59, 999); // End of day
+        
+        // Format dates for display
+        const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const articles = document.querySelectorAll('.article-card');
+        let visibleCount = 0;
+        
+        articles.forEach(article => {
+            const dateText = article.querySelector('.article-meta').textContent;
+            const dateMatch = dateText.match(/([A-Z][a-z]{2} \d{1,2}, \d{4})/);
+            if (!dateMatch) {
+                article.style.display = 'none';
+                return;
+            }
+            
+            const articleDate = new Date(dateMatch[1]);
+            
+            if (articleDate >= startDate && articleDate <= endDate) {
+                article.style.display = 'block';
+                visibleCount++;
+            } else {
+                article.style.display = 'none';
+            }
+        });
+        
+        // Show filter indicator with custom range
+        showFilterIndicator(`Custom range (${startStr} - ${endStr})`);
+        
+        updateResultCount(visibleCount);
+        showNoResultsMessage(visibleCount === 0);
+    }
+    
+    function clearAllFilters() {
+        // Reset search and category
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categoryFilter').value = '';
+        
+        // Reset date inputs
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        
+        // Reset time filter buttons
+        document.getElementById('todayBtn').classList.remove('btn-primary');
+        document.getElementById('todayBtn').classList.add('btn-outline-primary');
+        document.getElementById('weekBtn').classList.remove('btn-primary');
+        document.getElementById('weekBtn').classList.add('btn-outline-primary');
+        
+        activeTimeFilter = null;
+        
+        // Hide filter indicator
+        hideFilterIndicator();
+        
+        // Show all articles
+        const articles = document.querySelectorAll('.article-card');
+        articles.forEach(article => {
+            article.style.display = 'block';
+        });
+        
+        updateResultCount(articles.length);
+        showNoResultsMessage(false);
+    }
+    
+    function updateResultCount(count) {
+        const counter = document.getElementById('resultCount');
+        if (counter) {
+            counter.textContent = `${count} article${count !== 1 ? 's' : ''}`;
+        }
+    }
+    
+    function showNoResultsMessage(show) {
+        let msg = document.getElementById('noResultsMessage');
+        if (show && !msg) {
+            msg = document.createElement('div');
+            msg.id = 'noResultsMessage';
+            msg.className = 'alert alert-info text-center mt-4';
+            msg.innerHTML = '<i class="bi bi-info-circle"></i> No articles match your filters. Try adjusting your search criteria.';
+            document.querySelector('.col-lg-8').appendChild(msg);
+        } else if (!show && msg) {
+            msg.remove();
+        }
+    }
+
+    // Sort articles
+    function sortArticles() {
+        const sortBy = document.getElementById('sortBy').value;
+        const container = document.querySelector('.col-lg-8');
+        const categoryHeaders = Array.from(container.querySelectorAll('.category-header'));
+        const articles = Array.from(container.querySelectorAll('.article-card'));
+        
+        if (sortBy === 'relevance') {
+            // Reload page to restore original category-based order
+            location.reload();
+            return;
+        }
+        
+        // Hide all category headers when sorting by date
+        categoryHeaders.forEach(header => header.style.display = 'none');
+        
+        // Sort articles by date
+        articles.sort((a, b) => {
+            const dateA = new Date(a.querySelector('.article-meta').textContent.split('|')[1].trim());
+            const dateB = new Date(b.querySelector('.article-meta').textContent.split('|')[1].trim());
+            return sortBy === 'date-desc' ? dateB - dateA : dateA - dateB;
+        });
+        
+        // Clear container and append sorted articles
+        container.innerHTML = '';
+        articles.forEach(article => container.appendChild(article));
+    }
+
+    // Category Distribution Chart
+    {% if articles %}
+    const categoryData = {{ category_stats | tojson }};
+    const categoryColors = {
+        {% for category in categories %}
+        '{{ category.name }}': '{{ category.color }}',
+        {% endfor %}
+    };
+    
+    const ctx = document.getElementById('categoryChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(categoryData),
+                datasets: [{
+                    data: Object.values(categoryData),
+                    backgroundColor: Object.keys(categoryData).map(cat => categoryColors[cat] || '#6c757d'),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 10,
+                            font: { size: 11 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+</script>
+
+<!-- Keyboard Shortcuts -->
+<script>
+    // Professional keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + K: Focus search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            document.getElementById('searchInput').focus();
+        }
+        
+        // Ctrl/Cmd + R: Refresh news
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            e.preventDefault();
+            refreshNews();
+        }
+        
+        // Escape: Clear search
+        if (e.key === 'Escape') {
+            clearSearch();
+        }
+    });
+    
+    // Show keyboard shortcuts hint
+    window.addEventListener('load', function() {
+        const hint = document.createElement('div');
+        hint.className = 'keyboard-hint';
+        hint.innerHTML = '<i class="bi bi-keyboard"></i> Press <kbd>Ctrl+K</kbd> to search';
+        hint.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: var(--frb-primary); color: white; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; box-shadow: var(--shadow-md); z-index: 1000; opacity: 0; transition: opacity 0.3s;';
+        document.body.appendChild(hint);
+        
+        setTimeout(() => hint.style.opacity = '1', 1000);
+        setTimeout(() => hint.style.opacity = '0', 5000);
+        setTimeout(() => hint.remove(), 5500);
+    });
+</script>
+
+<!-- Edit Summary Modal -->
+<div class="modal fade" id="editSummaryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-content-enterprise">
+            <div class="modal-header modal-header-enterprise">
+                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit Summary</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="editSummaryText" class="form-control" rows="15"
+                    style="font-family: monospace;"></textarea>
+                <div class="form-text text-muted mt-2">
+                    Start lines with <code>**</code> for headers, <code>•</code> for bullets, and <code>> "</code> for
+                    quotes.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-enterprise" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-enterprise" onclick="saveSummary()"><i class="bi bi-check-lg"></i> Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clear All Confirmation Modal -->
+<div class="modal fade" id="clearConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content modal-content-enterprise">
+            <div class="modal-header modal-header-enterprise bg-danger">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirm Clear All Articles</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-circle"></i> <strong>Warning:</strong> This action cannot be undone!
+                </div>
+                <p>You are about to permanently delete <strong>all articles</strong> from the database.</p>
+                <p class="mb-0">Are you sure you want to continue?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-enterprise" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger btn-enterprise" id="confirmClearBtn" onclick="confirmClearAll()">
+                    <i class="bi bi-trash"></i> Yes, Clear All Articles
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

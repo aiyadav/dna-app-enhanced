@@ -1,0 +1,249 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+
+<!-- Modern Page Header -->
+<div class="modern-page-header animate-in">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="modern-title">
+                <i class="bi bi-folder-fill"></i> Categories
+            </h1>
+            <p class="modern-subtitle">Organize your news content</p>
+        </div>
+        <button class="btn-modern btn-modern-primary" onclick="showAddModal()">
+            <i class="bi bi-plus-circle-fill"></i>
+            Add Category
+        </button>
+    </div>
+</div>
+
+<!-- Compact Stats Grid -->
+<div class="modern-stats-grid animate-in">
+    <div class="modern-stat-card" style="--stat-color-1: #3b82f6; --stat-color-2: #2563eb;">
+        <div class="stat-header">
+            <div>
+                <div class="stat-value-modern">{{ categories|length }}</div>
+                <div class="stat-label-modern">Total</div>
+            </div>
+            <div class="stat-icon-modern">
+                <i class="bi bi-folder-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-stat-card" style="--stat-color-1: #10b981; --stat-color-2: #059669;">
+        <div class="stat-header">
+            <div>
+                <div class="stat-value-modern">{{ categories|selectattr('active')|list|length }}</div>
+                <div class="stat-label-modern">Active</div>
+            </div>
+            <div class="stat-icon-modern">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-stat-card" style="--stat-color-1: #f59e0b; --stat-color-2: #d97706;">
+        <div class="stat-header">
+            <div>
+                <div class="stat-value-modern">{{ categories|rejectattr('active')|list|length }}</div>
+                <div class="stat-label-modern">Inactive</div>
+            </div>
+            <div class="stat-icon-modern">
+                <i class="bi bi-pause-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Table Card -->
+<div class="modern-card animate-in">
+    <div class="modern-card-header">
+        <h2 class="modern-card-title">
+            <i class="bi bi-table"></i>
+            Category Management
+        </h2>
+        <div class="d-flex gap-2 align-items-center" style="flex-wrap: nowrap;">
+            <div class="modern-search" style="min-width: 250px;">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchCategories" placeholder="Search categories..." onkeyup="filterTable()">
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-card-body p-0">
+        {% if categories %}
+        <div class="modern-table-wrapper">
+            <table class="modern-table" id="categoriesTable">
+                <thead>
+                    <tr>
+                        <th width="30%">Category</th>
+                        <th width="35%">Description</th>
+                        <th width="15%">Color</th>
+                        <th width="10%">Status</th>
+                        <th width="10%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 32px; height: 32px; background: {{ category.color }}; border-radius: 8px;"></div>
+                                <span class="fw-bold">{{ category.name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ category.description or '-' }}</td>
+                        <td>
+                            <code style="font-size: 0.85rem;">{{ category.color }}</code>
+                        </td>
+                        <td>
+                            {% if category.active %}
+                            <span class="badge-modern badge-modern-success">
+                                <i class="bi bi-check-circle-fill"></i> Active
+                            </span>
+                            {% else %}
+                            <span class="badge-modern badge-modern-danger">
+                                <i class="bi bi-x-circle-fill"></i> Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons justify-content-end">
+                                <button class="action-btn action-btn-edit" onclick="editCategory({{ category.id }}, '{{ category.name }}', '{{ category.description or '' }}', '{{ category.color }}')" title="Edit">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <a href="{{ url_for('toggle_category', category_id=category.id) }}" class="action-btn action-btn-toggle" title="Toggle">
+                                    <i class="bi bi-{% if category.active %}pause{% else %}play{% endif %}-fill"></i>
+                                </a>
+                                <button class="action-btn action-btn-delete" onclick="confirmDelete({{ category.id }}, '{{ category.name }}')" title="Delete">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="modern-empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>No Categories Yet</h3>
+            <p>Create your first category to organize content</p>
+            <button class="btn-modern btn-modern-primary" onclick="showAddModal()">
+                <i class="bi bi-plus-circle-fill"></i>
+                Add Your First Category
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="bi bi-plus-circle-fill"></i> Add Category
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="categoryForm" method="POST" action="{{ url_for('add_category') }}">
+                <div class="modal-body modal-body-modern">
+                    <div class="mb-3">
+                        <label class="form-label-modern">Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control-modern" name="name" id="categoryName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-modern">Description</label>
+                        <input type="text" class="form-control-modern" name="description" id="categoryDescription">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-modern">Color <span class="text-danger">*</span></label>
+                        <input type="color" class="form-control form-control-color w-100" name="color" id="categoryColor" value="#3b82f6" style="height: 50px;">
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-modern">
+                    <button type="button" class="btn-modern btn-modern-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-modern btn-modern-primary">
+                        <i class="bi bi-check-circle-fill"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content modal-content-modern">
+            <div class="modal-header modal-header-modern" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-modern">
+                <p>Delete category <strong id="deleteCategoryName"></strong>?</p>
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-0">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>This action cannot be undone.</span>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-modern">
+                <button type="button" class="btn-modern btn-modern-outline" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDeleteBtn" class="btn-modern btn-modern-danger">
+                    <i class="bi bi-trash-fill"></i> Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let categoryModal, deleteModal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+});
+
+function showAddModal() {
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-circle-fill"></i> Add Category';
+    document.getElementById('categoryForm').action = '{{ url_for("add_category") }}';
+    document.getElementById('categoryName').value = '';
+    document.getElementById('categoryDescription').value = '';
+    document.getElementById('categoryColor').value = '#3b82f6';
+    categoryModal.show();
+}
+
+function editCategory(id, name, description, color) {
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-fill"></i> Edit Category';
+    document.getElementById('categoryForm').action = `/edit_category/${id}`;
+    document.getElementById('categoryName').value = name;
+    document.getElementById('categoryDescription').value = description;
+    document.getElementById('categoryColor').value = color;
+    categoryModal.show();
+}
+
+function confirmDelete(id, name) {
+    document.getElementById('deleteCategoryName').textContent = name;
+    document.getElementById('confirmDeleteBtn').href = `/delete_category/${id}`;
+    deleteModal.show();
+}
+
+function filterTable() {
+    const searchTerm = document.getElementById('searchCategories').value.toLowerCase();
+    const rows = document.querySelectorAll('#categoriesTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}
