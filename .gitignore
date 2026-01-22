@@ -10,7 +10,7 @@ ENV/
 .venv
 
 # Environment variables
-.env
+# .env - Now tracked in git for simplified EC2 deployment
 
 # Database
 *.db
