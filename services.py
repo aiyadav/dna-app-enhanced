@@ -37,6 +37,13 @@ def load_iam_config():
 
 def is_running_on_ec2():
     """Detect if running on EC2 by checking instance metadata and IAM role"""
+    # Check explicit environment variable first
+    env_override = os.environ.get('USE_EC2_ROLE', '').lower()
+    if env_override == 'true':
+        return True
+    elif env_override == 'false':
+        return False
+    
     try:
         # Check if we can access EC2 metadata service
         response = requests.get(
