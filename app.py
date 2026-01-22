@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from dotenv import load_dotenv
 import os
 import yaml
+import requests
 
 # Load environment variables FIRST before any AWS imports
 load_dotenv()
@@ -20,7 +21,7 @@ def load_iam_config():
 def is_running_on_ec2():
     """Detect if running on EC2 by checking instance metadata"""
     try:
-        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=0.1)
+        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=0.5)
         return response.status_code == 200
     except:
         return False
@@ -60,7 +61,6 @@ if not os.environ.get('AWS_DEFAULT_REGION'):
         print(f"AWS_DEFAULT_REGION set to: {region}")
 
 import threading
-import requests
 from sqlalchemy.orm import joinedload
 from database import SessionLocal, Feed, Topic, Article, Category, SystemConfig
 from sqlalchemy import func
