@@ -36,12 +36,33 @@ def load_iam_config():
         return {'iam_role_name': 'devops-genai-dna-dev-engineer-role', 'default_region': 'us-east-1', 'use_instance_role': 'auto'}
 
 def is_running_on_ec2():
-    """Detect if running on EC2 by checking instance metadata"""
+    """Detect if running on EC2 by checking instance metadata and IAM role"""
     try:
-        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=0.1)
-        return response.status_code == 200
+        # Check if we can access EC2 metadata service
+        response = requests.get(
+            'http://169.254.169.254/latest/meta-data/instance-id',
+            timeout=1
+        )
+        if response.status_code == 200:
+            return True
     except:
-        return False
+        pass
+    
+    # Fallback: Check if IAM role credentials are available
+    try:
+        import boto3
+        session = boto3.Session()
+        credentials = session.get_credentials()
+        if credentials:
+            # Check if credentials are from EC2 instance role
+            # Instance role credentials have specific provider names
+            provider = credentials.method
+            if provider in ['iam-role', 'container-role']:
+                return True
+    except:
+        pass
+    
+    return False
 
 IAM_CONFIG = load_iam_config()
 
@@ -91,26 +112,27 @@ class AIService:
             finally:
                 db.close()
             
-            # Use AWS_PROFILE if set, otherwise use default credential chain (strip whitespace)
-            profile_name = os.environ.get('AWS_PROFILE', '').strip()
-            # Treat empty string as None
-            if not profile_name:
-                profile_name = None
+            # Determine if we should use profile or instance role
+            profile_name = None
+            use_instance_role = IAM_CONFIG.get('use_instance_role', 'auto')
             
-            # If AWS_PROFILE is not set in environment, check if we should use it
-            if profile_name is None:
-                use_instance_role = IAM_CONFIG.get('use_instance_role', 'auto')
-                if use_instance_role == 'auto':
-                    on_ec2 = is_running_on_ec2()
+            if use_instance_role == 'auto':
+                on_ec2 = is_running_on_ec2()
+            else:
+                on_ec2 = use_instance_role in [True, 'true', 'True']
+            
+            if on_ec2:
+                # On EC2: Use instance role (profile_name stays None)
+                logger.info("Detected EC2 environment, using IAM instance role")
+            else:
+                # Local: Try AWS_PROFILE from env, then fall back to config
+                profile_name = os.environ.get('AWS_PROFILE', '').strip() or None
+                if not profile_name:
+                    profile_name = IAM_CONFIG.get('iam_role_name', '').strip() or None
+                if profile_name:
+                    logger.info(f"Using AWS profile: {profile_name}")
                 else:
-                    on_ec2 = use_instance_role in [True, 'true', 'True']
-                
-                if not on_ec2:
-                    # Local development: use profile
-                    profile_name = IAM_CONFIG.get('iam_role_name', '')
-                    if not profile_name:
-                        profile_name = None
-                # On EC2: leave profile_name as None to use instance role
+                    logger.info("Using default AWS credential chain")
             
             region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
             
@@ -225,27 +247,23 @@ class NewsProcessor:
             from dotenv import load_dotenv
             load_dotenv()
             
-            # Create fresh session to avoid expired token issues
-            import os
-            profile_name = os.environ.get('AWS_PROFILE', '').strip()
-            # Treat empty string as None
-            if not profile_name:
-                profile_name = None
+            # Determine if we should use profile or instance role
+            profile_name = None
+            use_instance_role = IAM_CONFIG.get('use_instance_role', 'auto')
             
-            # If AWS_PROFILE is not set in environment, check if we should use it
-            if profile_name is None:
-                use_instance_role = IAM_CONFIG.get('use_instance_role', 'auto')
-                if use_instance_role == 'auto':
-                    on_ec2 = is_running_on_ec2()
-                else:
-                    on_ec2 = use_instance_role in [True, 'true', 'True']
-                
-                if not on_ec2:
-                    # Local development: use profile
-                    profile_name = IAM_CONFIG.get('iam_role_name', '')
-                    if not profile_name:
-                        profile_name = None
-                # On EC2: leave profile_name as None to use instance role
+            if use_instance_role == 'auto':
+                on_ec2 = is_running_on_ec2()
+            else:
+                on_ec2 = use_instance_role in [True, 'true', 'True']
+            
+            if on_ec2:
+                # On EC2: Use instance role (profile_name stays None)
+                pass
+            else:
+                # Local: Try AWS_PROFILE from env, then fall back to config
+                profile_name = os.environ.get('AWS_PROFILE', '').strip() or None
+                if not profile_name:
+                    profile_name = IAM_CONFIG.get('iam_role_name', '').strip() or None
             
             region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
             

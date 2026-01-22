@@ -5,4 +5,4 @@ aws:
   iam_role_name: devops-genai-dna-dev-engineer-role
   default_region: us-east-1
   # Set to true when running on EC2 to use instance role instead of profile
-  use_instance_role: true  # auto, true, or false
+  use_instance_role: auto  # auto, true, or false
