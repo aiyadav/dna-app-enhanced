@@ -28,37 +28,27 @@ def is_running_on_ec2():
 
 iam_config = load_iam_config()
 
-# Set AWS environment variables from .env if not already set (strip whitespace)
-# Support both AWS_PROFILE (local) and AWS_ACCESS_KEY_ID (EC2/Docker)
-if not os.environ.get('AWS_PROFILE') and not os.environ.get('AWS_ACCESS_KEY_ID'):
-    use_instance_role = iam_config.get('use_instance_role', 'auto')
-    
-    # Auto-detect EC2 environment
-    if use_instance_role == 'auto':
-        on_ec2 = is_running_on_ec2()
-    else:
-        on_ec2 = use_instance_role in [True, 'true', 'True']
-    
-    if on_ec2:
-        # On EC2: Don't set AWS_PROFILE, let boto3 use instance role
-        print("Running on EC2: Using instance IAM role for authentication")
-    else:
-        # Local development: Use AWS_PROFILE
-        profile = os.getenv('AWS_PROFILE', '').strip()
-        if not profile:
-            profile = iam_config.get('iam_role_name', '')
+# Detect EC2 early
+on_ec2 = is_running_on_ec2()
+
+if on_ec2:
+    # On EC2: Remove AWS_PROFILE if it exists to force instance role usage
+    if 'AWS_PROFILE' in os.environ:
+        del os.environ['AWS_PROFILE']
+    print("Running on EC2: Using instance IAM role for authentication")
+else:
+    # Local: Ensure AWS_PROFILE is set
+    if not os.environ.get('AWS_PROFILE'):
+        profile = os.getenv('AWS_PROFILE', '').strip() or iam_config.get('iam_role_name', '')
         if profile:
             os.environ['AWS_PROFILE'] = profile
-            print(f"Local development: AWS_PROFILE set to {profile}")
-        
+    print(f"Local development: AWS_PROFILE set to {os.environ.get('AWS_PROFILE', 'default')}")
+
+# Set region if not already set
 if not os.environ.get('AWS_DEFAULT_REGION'):
-    region = os.getenv('AWS_DEFAULT_REGION', '').strip()
-    # If not in .env, use the one from YAML config
-    if not region:
-        region = iam_config.get('default_region', 'us-east-1')
-    if region:
-        os.environ['AWS_DEFAULT_REGION'] = region
-        print(f"AWS_DEFAULT_REGION set to: {region}")
+    region = iam_config.get('default_region', 'us-east-1')
+    os.environ['AWS_DEFAULT_REGION'] = region
+    print(f"AWS_DEFAULT_REGION set to: {region}")
 
 import threading
 from sqlalchemy.orm import joinedload
@@ -230,11 +220,7 @@ def test_bedrock_connection():
             region = 'us-east-1'
         
         # Determine if we should use profile or instance role
-        use_instance_role = iam_config.get('use_instance_role', 'auto')
-        if use_instance_role == 'auto':
-            on_ec2 = is_running_on_ec2()
-        else:
-            on_ec2 = use_instance_role in [True, 'true', 'True']
+        on_ec2 = is_running_on_ec2()
         
         if on_ec2:
             # On EC2: Use instance role (no profile)
