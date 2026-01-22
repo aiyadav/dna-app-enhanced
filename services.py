@@ -112,6 +112,7 @@ class AIService:
             # Get model configuration from database
             from database import SessionLocal, SystemConfig
             import os
+            
             db = SessionLocal()
             try:
                 model_config = db.query(SystemConfig).filter(SystemConfig.key == 'llm_model').first()
@@ -249,10 +250,6 @@ class NewsProcessor:
         try:
             if not self.ai_service.aws_available:
                 return False, "AWS Bedrock is not configured or unavailable"
-            
-            # Load environment variables to ensure they're available
-            from dotenv import load_dotenv
-            load_dotenv()
             
             # Determine if we should use profile or instance role
             profile_name = None

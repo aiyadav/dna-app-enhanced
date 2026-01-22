@@ -225,20 +225,29 @@ def test_bedrock_connection():
         data = request.json
         model_id = data.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
         
-        # Use AWS_PROFILE from environment (strip all whitespace)
-        profile_name = os.environ.get('AWS_PROFILE', '').strip()
         region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1').strip()
-        
-        # Ensure no trailing spaces
         if not region or len(region) > 20:
             region = 'us-east-1'
         
-        print(f"Testing Bedrock - Profile: '{profile_name}', Region: '{region}' (len={len(region)})")
-        
-        if profile_name:
-            session = boto3.Session(profile_name=profile_name)
+        # Determine if we should use profile or instance role
+        use_instance_role = iam_config.get('use_instance_role', 'auto')
+        if use_instance_role == 'auto':
+            on_ec2 = is_running_on_ec2()
         else:
+            on_ec2 = use_instance_role in [True, 'true', 'True']
+        
+        if on_ec2:
+            # On EC2: Use instance role (no profile)
+            print(f"Testing Bedrock on EC2 - Using instance role, Region: '{region}'")
             session = boto3.Session()
+        else:
+            # Local: Use profile if available
+            profile_name = os.environ.get('AWS_PROFILE', '').strip()
+            print(f"Testing Bedrock locally - Profile: '{profile_name}', Region: '{region}'")
+            if profile_name:
+                session = boto3.Session(profile_name=profile_name)
+            else:
+                session = boto3.Session()
         
         # Get caller identity first to verify credentials
         sts = session.client('sts')
@@ -263,6 +272,7 @@ def test_bedrock_connection():
         response_body = json.loads(response['body'].read())
         response_text = response_body['content'][0]['text']
         
+        env_info = "EC2 Instance Role" if on_ec2 else f"Profile: {os.environ.get('AWS_PROFILE', 'Default credentials')}"
         return jsonify({
             "success": True,
             "message": f"Connected successfully!\nModel: {model_id}\nIdentity: {identity['Arn']}\nResponse: {response_text[:100]}"
@@ -270,9 +280,10 @@ def test_bedrock_connection():
     except Exception as e:
         error_msg = str(e)
         print(f"Bedrock connection error: {error_msg}")
+        env_info = "EC2 Instance Role" if 'on_ec2' in locals() and on_ec2 else f"Profile: {os.environ.get('AWS_PROFILE', 'Not set')}"
         return jsonify({
             "success": False,
-            "message": f"Connection failed: {error_msg}\n\nProfile: {os.environ.get('AWS_PROFILE', 'Not set')}\nRegion: {os.environ.get('AWS_DEFAULT_REGION', 'Not set')}"
+            "message": f"Connection failed: {error_msg}\n\n{env_info}\nRegion: {os.environ.get('AWS_DEFAULT_REGION', 'Not set')}"
         }), 500
 
 @app.route('/add_feed', methods=['POST'])
