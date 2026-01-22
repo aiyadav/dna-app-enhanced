@@ -93,8 +93,12 @@ class AIService:
             
             # Use AWS_PROFILE if set, otherwise use default credential chain (strip whitespace)
             profile_name = os.environ.get('AWS_PROFILE', '').strip()
-            # If AWS_PROFILE is not set in environment, check if we should use it
+            # Treat empty string as None
             if not profile_name:
+                profile_name = None
+            
+            # If AWS_PROFILE is not set in environment, check if we should use it
+            if profile_name is None:
                 use_instance_role = IAM_CONFIG.get('use_instance_role', 'auto')
                 if use_instance_role == 'auto':
                     on_ec2 = is_running_on_ec2()
@@ -104,7 +108,9 @@ class AIService:
                 if not on_ec2:
                     # Local development: use profile
                     profile_name = IAM_CONFIG.get('iam_role_name', '')
-                # On EC2: leave profile_name empty to use instance role
+                    if not profile_name:
+                        profile_name = None
+                # On EC2: leave profile_name as None to use instance role
             
             region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
             
@@ -222,8 +228,12 @@ class NewsProcessor:
             # Create fresh session to avoid expired token issues
             import os
             profile_name = os.environ.get('AWS_PROFILE', '').strip()
-            # If AWS_PROFILE is not set in environment, check if we should use it
+            # Treat empty string as None
             if not profile_name:
+                profile_name = None
+            
+            # If AWS_PROFILE is not set in environment, check if we should use it
+            if profile_name is None:
                 use_instance_role = IAM_CONFIG.get('use_instance_role', 'auto')
                 if use_instance_role == 'auto':
                     on_ec2 = is_running_on_ec2()
@@ -233,7 +243,9 @@ class NewsProcessor:
                 if not on_ec2:
                     # Local development: use profile
                     profile_name = IAM_CONFIG.get('iam_role_name', '')
-                # On EC2: leave profile_name empty to use instance role
+                    if not profile_name:
+                        profile_name = None
+                # On EC2: leave profile_name as None to use instance role
             
             region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
             
