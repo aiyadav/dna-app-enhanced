@@ -687,28 +687,34 @@
     }
     
     function updateLiveCounters() {
+        // Force DOM reflow before counting
+        document.body.offsetHeight;
+        
         // Count total visible articles
         const totalArticles = document.querySelectorAll('.article-card').length;
+        console.log('=== updateLiveCounters called ===');
+        console.log('Total articles found:', totalArticles);
         
-        // Update Total Articles count
-        const totalCountEl = document.getElementById('totalArticlesCount');
-        if (totalCountEl) {
-            totalCountEl.textContent = totalArticles;
-            console.log('Updated total articles count:', totalArticles);
-        }
+        // Update ALL elements with totalArticlesCount ID (handles both visible and hidden containers)
+        document.querySelectorAll('#totalArticlesCount').forEach(el => {
+            el.textContent = totalArticles;
+            console.log('Updated totalArticlesCount element:', el);
+        });
         
-        // Count articles with relevancy scores (look for score badges)
+        // Count articles with relevancy scores
         const scoredArticles = document.querySelectorAll('.article-card .badge-enterprise.bg-light.text-dark.border').length;
-        const scoredCountEl = document.getElementById('scoredArticlesCount');
-        if (scoredCountEl) {
-            scoredCountEl.textContent = scoredArticles;
-            console.log('Updated scored articles count:', scoredArticles);
-        }
+        console.log('Scored articles found:', scoredArticles);
+        
+        document.querySelectorAll('#scoredArticlesCount').forEach(el => {
+            el.textContent = scoredArticles;
+            console.log('Updated scoredArticlesCount element:', el);
+        });
         
         // Update result count badge
         const resultCountEl = document.getElementById('resultCount');
         if (resultCountEl) {
             resultCountEl.textContent = `${totalArticles} article${totalArticles !== 1 ? 's' : ''}`;
+            console.log('Updated resultCount:', resultCountEl.textContent);
         }
         
         // Update category distribution and list
