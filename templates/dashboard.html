@@ -455,8 +455,11 @@
     // Progress monitoring with live article updates
     let progressCheckCount = 0;
     const MAX_PROGRESS_CHECKS = 3600; // 30 minutes at 500ms intervals
-    let lastArticleId = 0; // Track the last article ID we've seen
+    let lastArticleId = {{ articles[-1].id if articles else 0 }}; // Initialize with last article ID or 0
     let isProcessing = false;
+    
+    console.log('=== Dashboard Initialized ===');
+    console.log('Initial lastArticleId:', lastArticleId);
     
     function checkProgress() {
         if (progressCheckCount++ > MAX_PROGRESS_CHECKS) {
@@ -506,14 +509,18 @@
     }
     
     function fetchNewArticles() {
+        console.log(`Fetching new articles since ID: ${lastArticleId}`);
         fetch(`/get_new_articles?since_id=${lastArticleId}`)
             .then(response => response.json())
             .then(data => {
+                console.log(`Received ${data.articles ? data.articles.length : 0} new articles`);
                 if (data.articles && data.articles.length > 0) {
+                    console.log('First article:', data.articles[0].title);
                     data.articles.forEach(article => {
                         addArticleToPage(article);
                         lastArticleId = Math.max(lastArticleId, article.id);
                     });
+                    console.log('Updated lastArticleId to:', lastArticleId);
                 }
             })
             .catch(error => console.error('Error fetching new articles:', error));
