@@ -74,16 +74,19 @@
                 <button class="btn btn-sm btn-outline-primary" id="todayBtn" onclick="filterByTime('today')">
                     <i class="bi bi-calendar-day"></i> Today
                 </button>
+                <div id="todayDate" class="small text-muted mt-1" style="display: none;"></div>
             </div>
             <div class="col-auto">
                 <button class="btn btn-sm btn-outline-primary" id="weekBtn" onclick="filterByTime('week')">
                     <i class="bi bi-calendar-week"></i> This Week
                 </button>
+                <div id="weekDate" class="small text-muted mt-1" style="display: none;"></div>
             </div>
             <div class="col-auto">
                 <button class="btn btn-sm btn-outline-primary" id="customBtn" onclick="toggleCustomDate()">
                     <i class="bi bi-calendar-range"></i> Custom Date
                 </button>
+                <div id="customDate" class="small text-muted mt-1" style="display: none;"></div>
             </div>
             <div class="col-auto" id="customDateInputs" style="display: none;">
                 <div class="input-group input-group-sm" style="width: auto;">
@@ -648,11 +651,13 @@
     }
     
     function filterByTime(period) {
-        // Reset all button states
+        // Reset all button states and date displays
         document.getElementById('todayBtn').classList.remove('btn-primary');
         document.getElementById('todayBtn').classList.add('btn-outline-primary');
+        document.getElementById('todayDate').style.display = 'none';
         document.getElementById('weekBtn').classList.remove('btn-primary');
         document.getElementById('weekBtn').classList.add('btn-outline-primary');
+        document.getElementById('weekDate').style.display = 'none';
         
         // Set active button
         const activeBtn = period === 'today' ? 'todayBtn' : 'weekBtn';
@@ -668,6 +673,17 @@
         
         // Format date for display
         const todayStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        // Show date below button
+        if (period === 'today') {
+            document.getElementById('todayDate').textContent = todayStr;
+            document.getElementById('todayDate').style.display = 'block';
+        } else if (period === 'week') {
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const weekAgoStr = weekAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById('weekDate').textContent = `${weekAgoStr} - ${todayStr}`;
+            document.getElementById('weekDate').style.display = 'block';
+        }
         
         articles.forEach(article => {
             const dateText = article.querySelector('.article-meta').textContent;
@@ -721,8 +737,10 @@
         // Reset preset button states
         document.getElementById('todayBtn').classList.remove('btn-primary');
         document.getElementById('todayBtn').classList.add('btn-outline-primary');
+        document.getElementById('todayDate').style.display = 'none';
         document.getElementById('weekBtn').classList.remove('btn-primary');
         document.getElementById('weekBtn').classList.add('btn-outline-primary');
+        document.getElementById('weekDate').style.display = 'none';
         
         // Keep custom button active
         document.getElementById('customBtn').classList.remove('btn-outline-primary');
@@ -737,6 +755,10 @@
         // Format dates for display
         const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        // Show date below custom button
+        document.getElementById('customDate').textContent = `${startStr} - ${endStr}`;
+        document.getElementById('customDate').style.display = 'block';
         
         const articles = document.querySelectorAll('.article-card');
         let visibleCount = 0;
@@ -776,13 +798,16 @@
         document.getElementById('endDate').value = '';
         document.getElementById('customDateInputs').style.display = 'none';
         
-        // Reset time filter buttons
+        // Reset time filter buttons and hide date displays
         document.getElementById('todayBtn').classList.remove('btn-primary');
         document.getElementById('todayBtn').classList.add('btn-outline-primary');
+        document.getElementById('todayDate').style.display = 'none';
         document.getElementById('weekBtn').classList.remove('btn-primary');
         document.getElementById('weekBtn').classList.add('btn-outline-primary');
+        document.getElementById('weekDate').style.display = 'none';
         document.getElementById('customBtn').classList.remove('btn-primary');
         document.getElementById('customBtn').classList.add('btn-outline-primary');
+        document.getElementById('customDate').style.display = 'none';
         
         activeTimeFilter = null;
         
