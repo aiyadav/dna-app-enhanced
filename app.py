@@ -16,7 +16,7 @@ def load_iam_config():
             return config['aws']
     except Exception as e:
         print(f"Warning: Could not load ec2_service_role.yml: {e}")
-        return {'iam_role_name': 'devops-genai-dna-dev-engineer-role', 'default_region': 'us-east-1', 'use_instance_role': 'auto'}
+        return {'default_region': 'us-east-1'}
 
 def is_running_on_ec2():
     """Detect if running on EC2 by checking instance metadata"""
