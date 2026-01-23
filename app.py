@@ -21,7 +21,26 @@ def load_iam_config():
 def is_running_on_ec2():
     """Detect if running on EC2 by checking instance metadata"""
     try:
-        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=0.5)
+        # Try IMDSv2 first
+        token_response = requests.put(
+            'http://169.254.169.254/latest/api/token',
+            headers={'X-aws-ec2-metadata-token-ttl-seconds': '21600'},
+            timeout=1
+        )
+        if token_response.status_code == 200:
+            token = token_response.text
+            response = requests.get(
+                'http://169.254.169.254/latest/meta-data/instance-id',
+                headers={'X-aws-ec2-metadata-token': token},
+                timeout=1
+            )
+            return response.status_code == 200
+    except:
+        pass
+    
+    try:
+        # Fallback to IMDSv1
+        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=1)
         return response.status_code == 200
     except:
         return False

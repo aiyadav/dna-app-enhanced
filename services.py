@@ -121,13 +121,7 @@ class AIService:
                 db.close()
             
             # Determine if we should use profile or instance role
-            profile_name = None
-            use_instance_role = IAM_CONFIG.get('use_instance_role', 'auto')
-            
-            if use_instance_role == 'auto':
-                on_ec2 = is_running_on_ec2()
-            else:
-                on_ec2 = use_instance_role in [True, 'true', 'True']
+            on_ec2 = is_running_on_ec2()
             
             if on_ec2:
                 # On EC2: Use instance role (profile_name stays None)
@@ -252,13 +246,7 @@ class NewsProcessor:
                 return False, "AWS Bedrock is not configured or unavailable"
             
             # Determine if we should use profile or instance role
-            profile_name = None
-            use_instance_role = IAM_CONFIG.get('use_instance_role', 'auto')
-            
-            if use_instance_role == 'auto':
-                on_ec2 = is_running_on_ec2()
-            else:
-                on_ec2 = use_instance_role in [True, 'true', 'True']
+            on_ec2 = is_running_on_ec2()
             
             if on_ec2:
                 # On EC2: Use instance role (profile_name stays None)
