@@ -493,12 +493,15 @@
             return;
         }
         
+        console.log('Adding article to page:', article.title);
+        
         // Hide "No Articles" message and show articles container
         const noArticlesMsg = document.getElementById('no-articles-message');
         const articlesContainer = document.getElementById('articles-container');
         if (noArticlesMsg && articlesContainer) {
             noArticlesMsg.style.display = 'none';
             articlesContainer.style.display = 'flex';
+            console.log('Showed articles container');
         }
         
         // Update live counters
@@ -583,6 +586,10 @@
             // Append to end if no category
             articlesList.insertAdjacentHTML('beforeend', articleHTML);
         }
+        
+        // Update counters after adding article
+        console.log('Article added, updating counters...');
+        updateLiveCounters();
     }
     
     function formatSummary(summary) {
@@ -617,20 +624,27 @@
     function updateLiveCounters() {
         // Count total visible articles
         const totalArticles = document.querySelectorAll('.article-card').length;
+        
+        // Update Total Articles count
         const totalCountEl = document.getElementById('totalArticlesCount');
         if (totalCountEl) {
             totalCountEl.textContent = totalArticles;
+            console.log('Updated total articles count:', totalArticles);
         }
         
-        // Count articles with relevancy scores
+        // Count articles with relevancy scores (look for score badges)
         const scoredArticles = document.querySelectorAll('.article-card .badge-enterprise.bg-light.text-dark.border').length;
         const scoredCountEl = document.getElementById('scoredArticlesCount');
         if (scoredCountEl) {
             scoredCountEl.textContent = scoredArticles;
+            console.log('Updated scored articles count:', scoredArticles);
         }
         
         // Update result count badge
-        updateResultCount(totalArticles);
+        const resultCountEl = document.getElementById('resultCount');
+        if (resultCountEl) {
+            resultCountEl.textContent = `${totalArticles} article${totalArticles !== 1 ? 's' : ''}`;
+        }
     }
     
     // Add CSS animation for new articles
