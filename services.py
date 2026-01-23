@@ -167,7 +167,7 @@ class AIService:
             relevancy_section = "\n\nRELEVANCY CRITERIA:\nThe article should be related to these topics and keywords:\n"
             for topic in topics:
                 relevancy_section += f"- {topic.name}: {topic.keywords}\n"
-            relevancy_section += "\nScore 75+ only if the article directly relates to these topics."
+            relevancy_section += "\nScore the relevancy (0-100) based on how well the article relates to these topics. Score 75+ if clearly relevant, 50-74 if somewhat related, below 50 if not related."
         
         prompt = f"""Analyze this article and create an executive briefing.
 
@@ -440,7 +440,10 @@ class NewsProcessor:
                         relevancy_score = int(analysis.get("relevancy_score", 0))
                         ai_author = analysis.get("author", "")
                         
-                        print(f"  -> AI returned category: '{category_name}' (Score: {relevancy_score})")
+                        print(f"  -> AI Analysis Results:")
+                        print(f"     - Category: '{category_name}'")
+                        print(f"     - Relevancy Score: {relevancy_score}")
+                        print(f"     - Author: '{ai_author}'")
                         
                         # Use AI extracted author if original was missing/unknown and AI found one
                         if (not entry_author or entry_author.lower() in ['unknown', '']) and ai_author and ai_author.lower() != "unknown":
