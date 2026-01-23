@@ -538,9 +538,10 @@ class NewsProcessor:
                         
                         db.add(article)
                         db.commit()
+                        db.refresh(article)  # Refresh to get the ID assigned by database
                         processed_count += 1
                         self.progress['saved'] += 1
-                        print(f"  -> [SAVED] Article saved! Category: {category.name} ({processed_count} total)")
+                        print(f"  -> [SAVED] Article ID {article.id} saved! Category: {category.name} ({processed_count} total)")
                     
                     except Exception as entry_error:
                         logger.error(f"Error processing entry: {entry_error}")
