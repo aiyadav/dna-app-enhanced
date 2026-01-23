@@ -196,6 +196,7 @@ Return JSON:
             )
             response_body = json.loads(response['body'].read())
             response_text = response_body['content'][0]['text']
+            logger.info(f"AI raw response: {response_text}")
             result = json.loads(response_text)
             
             if isinstance(result, dict):
@@ -417,6 +418,7 @@ class NewsProcessor:
                             continue
                         
                         print(f"  -> Analyzing with AI...")
+                        print(f"  -> Available categories: {[c.name for c in categories]}")
                         time.sleep(1)
                         analysis = self.ai_service.analyze_article(entry_title, entry_author, content, entry_link, categories)
                         
@@ -429,12 +431,12 @@ class NewsProcessor:
                         relevancy_score = int(analysis.get("relevancy_score", 0))
                         ai_author = analysis.get("author", "")
                         
+                        print(f"  -> AI returned category: '{category_name}' (Score: {relevancy_score})")
+                        
                         # Use AI extracted author if original was missing/unknown and AI found one
                         if (not entry_author or entry_author.lower() in ['unknown', '']) and ai_author and ai_author.lower() != "unknown":
                             entry_author = ai_author
                             print(f"  -> Extracted author via AI: {entry_author}")
-                        
-                        print(f"  -> Category: {category_name} (Score: {relevancy_score})")
 
                         # Filter articles with low relevancy score
                         if relevancy_score < 75:
@@ -451,15 +453,17 @@ class NewsProcessor:
                             # If even the best matching is < 75, then it's not relevant to our interests defined by categories.
                             continue
                         
-                        category = next((c for c in categories if c.name == category_name), None)
+                        # Case-insensitive category matching
+                        category = next((c for c in categories if c.name.lower() == category_name.lower()), None)
                         
-                        # If category name returned by AI doesn't match our DB (hallucination), treat as uncategorized or skip?
-                        # If we have a high score but invalid category name, it's weird.
-                        # Using default behavior: if category not found but score is high, maybe fallback?
-                        # But simpler is to rely on AI returning valid category from the list we gave.
+                        if not category:
+                            print(f"  -> WARNING: AI returned category '{category_name}' not found in DB categories")
+                            print(f"  -> Skipping article due to invalid category")
+                            continue
                         
-                        final_category_name = category.name if category else None
-                        final_category_color = category.color if category else None
+                        final_category_name = category.name
+                        final_category_color = category.color
+                        print(f"  -> Matched to DB category: {final_category_name} (color: {final_category_color})")
                             
                         article = Article(
                             title=entry_title,
