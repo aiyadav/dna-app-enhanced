@@ -110,17 +110,7 @@
     </div>
 </div>
 
-{% if articles %}
-<!-- Active Filter Indicator -->
-<div id="filterIndicator" class="alert alert-info mb-4" style="display: none;">
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <i class="bi bi-funnel-fill me-2"></i>
-            <strong>Showing articles:</strong> <span id="filterText"></span>
-        </div>
-        <button type="button" class="btn-close" onclick="clearAllFilters()"></button>
-    </div>
-</div>
+<!-- Progress Monitor - Always present -->
 <div id="progress-monitor" class="card-enterprise mb-4" style="display: none;">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -136,6 +126,18 @@
             <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
         </div>
         <div id="progress-status" class="small text-muted">Initializing...</div>
+    </div>
+</div>
+
+{% if articles %}
+<!-- Active Filter Indicator -->
+<div id="filterIndicator" class="alert alert-info mb-4" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <i class="bi bi-funnel-fill me-2"></i>
+            <strong>Showing articles:</strong> <span id="filterText"></span>
+        </div>
+        <button type="button" class="btn-close" onclick="clearAllFilters()"></button>
     </div>
 </div>
 <div class="row">
@@ -374,18 +376,6 @@
     </div>
 </div>
 {% else %}
-<div id="progress-monitor" class="card-enterprise mb-4" style="display: none;">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Processing News Feeds...</h5>
-            <button type="button" class="btn-close" onclick="document.getElementById('progress-monitor').style.display='none'"></button>
-        </div>
-        <div class="progress progress-enterprise mb-2">
-            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
-        </div>
-        <div id="progress-status" class="small text-muted">Initializing...</div>
-    </div>
-</div>
 <div class="card-enterprise text-center py-5">
     <div class="card-body">
         <i class="bi bi-inbox" style="font-size: 4rem; color: #6c757d;"></i>
@@ -396,29 +386,6 @@
         </a>
     </div>
 </div>
-            <script>
-                // Progress monitoring for empty dashboard
-                function checkProgress() {
-                    fetch('/processing_status')
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.processing) {
-                                document.getElementById('progress-monitor').style.display = 'block';
-                                const percent = Math.round((data.processed / data.total) * 100) || 0;
-                                document.getElementById('progress-bar').style.width = percent + '%';
-                                document.getElementById('progress-bar').textContent = percent + '%';
-                                document.getElementById('progress-status').innerHTML = 
-                                    `<strong>${data.processed}</strong> of <strong>${data.total}</strong> articles processed | 
-                                    <strong>${data.saved}</strong> saved | 
-                                    Current: ${data.current_article || 'Initializing...'}`;
-                                setTimeout(checkProgress, 500);
-                            } else if (document.getElementById('progress-monitor').style.display === 'block') {
-                                location.reload();
-                            }
-                        });
-                }
-                setTimeout(checkProgress, 500);
-            </script>
 {% endif %}
 
 <script>
