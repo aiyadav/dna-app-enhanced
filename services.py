@@ -462,8 +462,8 @@ class NewsProcessor:
                             print(f"  -> Extracted author via AI: {entry_author}")
 
                         # Filter articles with low relevancy score
-                        if relevancy_score < 75:
-                            print(f"  -> Skipping: Low relevancy score ({relevancy_score} < 75)")
+                        if relevancy_score < 5:
+                            print(f"  -> Skipping: Low relevancy score ({relevancy_score} < 5)")
                             # We can choose to either not save it, or save it as uncategorized.
                             # "filter articles that are not relevant to the categories" implies discarding or not mapping.
                             # User said: "do not map an article to any category if it's relevancy score is less than 75%."
