@@ -249,7 +249,9 @@ def test_bedrock_connection():
         on_ec2_now = is_running_on_ec2()
         
         if on_ec2_now:
-            # On EC2: Use instance role (no profile)
+            # On EC2: Use instance role (no profile) - ensure AWS_PROFILE is not set
+            if 'AWS_PROFILE' in os.environ:
+                del os.environ['AWS_PROFILE']
             print(f"Testing Bedrock on EC2 - Using instance role, Region: '{region}'")
             session = boto3.Session()
         else:
