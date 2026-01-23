@@ -853,12 +853,17 @@
         fetch('/refresh_news')
             .then(response => response.json())
             .then(data => {
-                showToast('News refresh started. Processing articles...', 'info');
-                // Immediately show progress monitor and start checking
-                document.getElementById('progress-monitor').style.display = 'block';
-                isProcessing = true;
-                progressCheckCount = 0;
-                checkProgress();
+                if (data.status === 'error') {
+                    showToast(data.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                } else {
+                    showToast('News refresh started. Processing articles...', 'info');
+                    document.getElementById('progress-monitor').style.display = 'block';
+                    isProcessing = true;
+                    progressCheckCount = 0;
+                    checkProgress();
+                }
             })
             .catch(error => {
                 showToast('Error starting refresh', 'error');
