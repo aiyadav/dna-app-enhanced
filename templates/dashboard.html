@@ -525,17 +525,20 @@
             return;
         }
         
-        console.log('Adding article to page:', article.title);
+        console.log('=== addArticleToPage called ===');
+        console.log('Article:', article.title);
         
-        // Hide "No Articles" message and show articles container
+        // Handle empty dashboard - show hidden container
         const noArticlesMsg = document.getElementById('no-articles-message');
         const articlesContainer = document.getElementById('articles-container');
+        
         if (noArticlesMsg && articlesContainer) {
+            console.log('Empty dashboard detected, showing articles container');
             noArticlesMsg.style.display = 'none';
-            articlesContainer.style.display = 'flex';
-            console.log('Showed articles container');
+            articlesContainer.style.display = '';
+            articlesContainer.classList.add('row');
             
-            // Initialize category chart if not already initialized
+            // Initialize category chart
             if (!window.categoryChart) {
                 const ctx = document.getElementById('categoryChart');
                 if (ctx) {
@@ -564,21 +567,25 @@
                             }
                         }
                     });
-                    console.log('Initialized category chart');
+                    console.log('Category chart initialized');
                 }
             }
         }
         
-        // Find the articles list container
+        // Find articles list container
         let articlesList = document.getElementById('articles-list');
         if (!articlesList) {
-            articlesList = document.querySelector('.col-lg-8');
+            articlesList = document.querySelector('.col-lg-8:not(:has(#articles-list))');
         }
+        
         if (!articlesList) {
-            console.error('Articles container not found');
+            console.error('ERROR: Articles list container not found!');
             return;
         }
         
+        console.log('Articles list container found:', articlesList);
+        
+        // Build article HTML
         const articleHTML = `
             <div class="article-card" data-article-id="${article.id}" style="animation: slideIn 0.5s ease-out;">
                 <h3 class="mb-3">
@@ -622,7 +629,7 @@
                         </button>
                     </div>
                 </div>
-                <textarea id="raw-summary-${article.id}" style="display: none;">${article.summary}</textarea>
+                <textarea id="raw-summary-${article.id}" style="display: none;">${article.summary || ''}</textarea>
             </div>
         `;
         
@@ -631,7 +638,6 @@
         let categorySection = document.getElementById(`category-${categorySlug}`);
         
         if (!categorySection && article.category_name) {
-            // Create new category section
             const categoryHTML = `
                 <div id="category-${categorySlug}" class="category-header" style="border-left-color: ${article.category_color};">
                     <h2 class="category-title" style="color: ${article.category_color};"><i class="bi bi-folder-fill"></i> ${article.category_name}</h2>
@@ -639,22 +645,23 @@
             `;
             articlesList.insertAdjacentHTML('beforeend', categoryHTML);
             categorySection = document.getElementById(`category-${categorySlug}`);
+            console.log('Created category section:', article.category_name);
         }
         
-        // Insert article after category header
+        // Insert article
         if (categorySection) {
             categorySection.insertAdjacentHTML('afterend', articleHTML);
         } else {
-            // Append to end if no category
             articlesList.insertAdjacentHTML('beforeend', articleHTML);
         }
         
-        console.log('Article HTML inserted, updating counters...');
+        console.log('Article HTML inserted into DOM');
         
-        // CRITICAL: Update counters AFTER article is in DOM
-        setTimeout(() => {
+        // Update counters immediately after DOM insertion
+        requestAnimationFrame(() => {
+            console.log('Updating counters via requestAnimationFrame');
             updateLiveCounters();
-        }, 50);
+        });
     }
     
     function formatSummary(summary) {
