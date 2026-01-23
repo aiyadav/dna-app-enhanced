@@ -668,7 +668,11 @@
             .then(response => response.json())
             .then(data => {
                 showToast('News refresh started. Processing articles...', 'info');
-                setTimeout(checkProgress, 500);
+                // Immediately show progress monitor and start checking
+                document.getElementById('progress-monitor').style.display = 'block';
+                isProcessing = true;
+                progressCheckCount = 0;
+                checkProgress();
             })
             .catch(error => {
                 showToast('Error starting refresh', 'error');
