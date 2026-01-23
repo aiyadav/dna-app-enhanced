@@ -125,7 +125,12 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Processing News Feeds...</h5>
-            <button type="button" class="btn-close" onclick="document.getElementById('progress-monitor').style.display='none'"></button>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-danger" onclick="stopProcessing()" id="stopBtn">
+                    <i class="bi bi-stop-circle"></i> Stop
+                </button>
+                <button type="button" class="btn-close" onclick="document.getElementById('progress-monitor').style.display='none'"></button>
+            </div>
         </div>
         <div class="progress progress-enterprise mb-2">
             <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
@@ -626,6 +631,30 @@
     
     // Start checking on page load
     setTimeout(checkProgress, 500);
+
+    // Stop Processing function
+    function stopProcessing() {
+        const btn = document.getElementById('stopBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Stopping...';
+        
+        fetch('/stop_processing')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast(data.message, 'info');
+                } else {
+                    showToast(data.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-stop-circle"></i> Stop';
+                }
+            })
+            .catch(error => {
+                showToast('Error stopping processing', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-stop-circle"></i> Stop';
+            });
+    }
 
     // Refresh News with loading state
     function refreshNews() {

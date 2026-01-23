@@ -415,6 +415,13 @@ def processing_status():
         "current_article": news_processor.progress.get('current_article', '')
     })
 
+@app.route('/stop_processing')
+def stop_processing():
+    if news_processor.stop_processing():
+        return jsonify({"status": "success", "message": "Stop request sent. Processing will halt after current article."})
+    else:
+        return jsonify({"status": "error", "message": "No processing is currently running"}), 400
+
 @app.route('/clear_all_news')
 def clear_all_news():
     count = news_processor.clear_all_articles()

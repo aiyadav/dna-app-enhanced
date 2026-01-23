@@ -275,6 +275,7 @@ class NewsProcessor:
         self.rss_fetcher = RSSFetcher()
         self.ai_service = AIService(api_key)
         self.processing = False
+        self.stop_requested = False
         self.progress = {
             'total': 0,
             'processed': 0,
@@ -362,11 +363,20 @@ class NewsProcessor:
         finally:
             db.close()
     
+    def stop_processing(self):
+        """Request to stop the current processing"""
+        if self.processing:
+            self.stop_requested = True
+            logger.info("Stop processing requested by user")
+            return True
+        return False
+    
     def process_feeds(self):
         if self.processing:
             return "Already processing"
         
         self.processing = True
+        self.stop_requested = False
         self.progress = {'total': 0, 'processed': 0, 'saved': 0, 'current_article': ''}
         try:
             self.cleanup_old_articles()
@@ -407,11 +417,23 @@ class NewsProcessor:
             self.progress['total'] = total_entries
             
             for feed in feeds:
+                # Check if stop was requested
+                if self.stop_requested:
+                    print(f"\n=== Processing stopped by user ===")
+                    print(f"Processed {processed_count} articles before stopping")
+                    return f"Processing stopped by user. Saved {processed_count} articles."
+                
                 print(f"\nProcessing feed: {feed.name}")
                 entries = self.rss_fetcher.fetch_feed(feed.url, feed.access_key)
                 print(f"Found {len(entries)} entries in feed")
                 
                 for entry in entries:
+                    # Check if stop was requested
+                    if self.stop_requested:
+                        print(f"\n=== Processing stopped by user ===")
+                        print(f"Processed {processed_count} articles before stopping")
+                        return f"Processing stopped by user. Saved {processed_count} articles."
+                    
                     try:
                         entry_link = getattr(entry, 'link', '')
                         entry_title = getattr(entry, 'title', 'Untitled')

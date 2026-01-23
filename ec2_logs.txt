@@ -1,0 +1,170 @@
+Jan 23 21:59:40 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:40] "GET /static/css/enterprise.css HTTP/1.1" 304 -
+Jan 23 21:59:40 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:40] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:41 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:41] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:41 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:41] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:42 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:42] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:42 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:42] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:42 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:42] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:services:AI raw response: {
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:   "bullets": [
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:     "Major health insurance companies are facing criticism from lawmakers for failing to rein in the cost of medical care for consumers.",
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:     "Executives of these companies defended their practices, saying they are working to lower costs but faced challenges from hospitals and drug makers.",
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:     "Lawmakers accused the insurers of shifting the blame rather than taking responsibility for high health care costs.",
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:     "The hearings highlighted the ongoing tensions between insurers, health care providers, and consumers over who is responsible for rising medical expenses."
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:   ],
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:   "category": "FRBSF Economy",
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:   "relevancy_score": 70,
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]:   "author": "Reed Abelson"
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]: }
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:43] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:43] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:43 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:43] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:44 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:44] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:44 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:44] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:44 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:44] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:services:AI raw response: {
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]:     "bullets": [
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]:         "The Metals Company, a prominent seabed-mining company, applauded the new U.S. rule that aims to speed up mining of the seafloor.",
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]:         "The Metals Company has filed a new application to more than double the area it hopes to mine."
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]:     ],
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]:     "category": "DailyNews",
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]:     "relevancy_score": 60,
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]:     "author": "Sachi Kitajima Mulkey"
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]: }
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:45] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:45 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:45] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:46 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:46] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:46 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:46] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:46 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:46] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:47] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:47] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:47] "GET / HTTP/1.1" 200 -
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:47] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:services:AI raw response: {
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: "bullets": [
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: "The article discusses the possibility of former President Donald Trump beginning to fly on a plane donated by Qatar by summer.",
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: "It remains unclear whether the aircraft would get the full Air Force One security upgrades, which industry experts said could take up to two years to complete.",
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: "The article does not contain any information related to the FRBSF Economy, Crypto, or Housing topics."
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: ],
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: "category": "DailyNews",
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: "relevancy_score": 50,
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: "author": "Tyler Pager and Eric Schmitt"
+Jan 23 21:59:47 ip-10-147-73-35.ec2.internal python3.11[9247]: }
+Jan 23 21:59:48 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:48] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:48 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:48] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:48 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:48] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:49 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:49] "GET / HTTP/1.1" 200 -
+Jan 23 21:59:49 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:49] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:49 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:49] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:50] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:50] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:50] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:services:AI raw response: {
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]:   "bullets": [
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]:     "Former President Trump is suing JPMorgan Chase, claiming the bank closed his accounts for political reasons shortly after the January 6th attack on the Capitol.",
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]:     "The lawsuit alleges "political discrimination" and states that JPMorgan Chase told Trump it would close his accounts after the January 6th events.",
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]:     "The lawsuit does not provide details on which specific Trump accounts were closed by the bank."
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]:   ],
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]:   "category": "Daily News",
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]:   "relevancy_score": 60,
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]:   "author": "Matthew Goldstein"
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]: }
+Jan 23 21:59:50 ip-10-147-73-35.ec2.internal python3.11[9247]: ERROR:services:AI analysis error: Expecting ',' delimiter: line 4 column 27 (char 211)
+Jan 23 21:59:51 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:51] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:51 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:51] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:51 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:51] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:52 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:52] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:52 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:52] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:52 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:52] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:53] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:53] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:services:AI raw response: {
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]:     "bullets": [
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]:         "A major winter storm is threatening to disrupt travel across the Eastern U.S. this weekend, with ice, sleet and heavy snowfall expected.",
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]:         "The storm could impact air travel, with potential flight delays and cancellations, as well as cause hazardous driving conditions on the roads.",
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]:         "Travelers are advised to check weather forecasts and flight/travel updates, and consider adjusting their plans if possible to avoid potential disruptions."
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]:     ],
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]:     "category": "DailyNews",
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]:     "relevancy_score": 75,
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]:     "author": "Christine Chung"
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]: }
+Jan 23 21:59:53 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:53] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:54 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:54] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:54 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:54] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:55 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:55] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:55 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:55] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:55 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:55] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:56] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:services:AI raw response: {
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:   "bullets": [
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:     "Prediction markets are platforms where people can bet on the outcomes of future events, such as elections or the weather.",
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:     "Traders known as "Polymarket sharps" are making millions by exploiting inefficiencies in these prediction markets.",
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:     "Polymarket is one of the largest prediction market platforms, with over $70 million in total bets placed on its platform.",
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:     "Polymarket sharps use advanced trading strategies, often involving leverage and arbitrage, to profit from small price discrepancies in the market."
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:   ],
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:   "category": "Crypto",
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:   "relevancy_score": 80,
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]:   "author": "Benjamin Wallace"
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]: }
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]: ERROR:services:AI analysis error: Expecting ',' delimiter: line 4 column 24 (char 169)
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:56] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:56 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:56] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:57 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:57] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:57 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:57] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:57 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:57] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:58 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:58] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:58 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:58] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:58 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:58] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 21:59:59] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:services:AI raw response: {
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:   "bullets": [
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:     "The article discusses how President Trump used a keynote speech at the World Economic Forum in Switzerland to renounce the last vestiges of the liberal democratic order.",
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:     "The article suggests that China is emerging as the winner as the United States cedes leadership of the global economy under Trump's policies.",
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:     "The article argues that Trump's policies have undermined the multilateral institutions and agreements that have underpinned the global economy since World War II.",
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:     "The article suggests that Trump's withdrawal from the Paris climate accord and other international agreements has created a leadership vacuum that China is poised to fill."
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:   ],
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:   "category": "DailyNews",
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:   "relevancy_score": 75,
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]:   "author": "Peter S. Goodman"
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]: }
+Jan 23 21:59:59 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 21:59:59] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:00 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:00] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:00 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:00] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:00 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:00] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:01 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:01] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:01 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:01] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:01 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:01] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:02 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:02] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:02 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:02] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:02 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:02] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:03] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:03] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:services:AI raw response: {
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:     "bullets": [
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:         "Sports-betting scandals have been a persistent issue in professional sports, dating back to the early days of competitive athletics.",
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:         "Whether these scandals significantly impact the business of sports and fan engagement is an open question, as some high-profile incidents have not led to lasting consequences.",
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:         "The article examines how various sports-betting scandals, such as the 1919 Black Sox Scandal and more recent incidents, have affected the sports industry and fan perceptions.",
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:         "The author suggests that the impact of sports-betting scandals on the business and popularity of sports is not always predictable, with some incidents having minimal long-term effects."
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:     ],
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:     "category": "DailyNews",
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:     "relevancy_score": 60,
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]:     "author": "Tania Ganguli"
+Jan 23 22:00:03 ip-10-147-73-35.ec2.internal python3.11[9247]: }
+Jan 23 22:00:04 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:04] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:04 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:04] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:04 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:04] "GET / HTTP/1.1" 200 -
+Jan 23 22:00:04 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:04] "GET / HTTP/1.1" 200 -
+Jan 23 22:00:04 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:04] "GET /static/frb_sf_logo.jpg HTTP/1.1" 304 -
+Jan 23 22:00:04 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:04] "GET /static/css/enterprise.css HTTP/1.1" 304 -
+Jan 23 22:00:04 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:04] "GET /static/css/enterprise.css HTTP/1.1" 304 -
+Jan 23 22:00:04 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:04] "GET /static/frb_sf_logo.jpg HTTP/1.1" 304 -
+Jan 23 22:00:06 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.45 - - [23/Jan/2026 22:00:06] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:06 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:06] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:09 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:09] "GET / HTTP/1.1" 200 -
+Jan 23 22:00:09 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:09] "GET /static/css/enterprise.css HTTP/1.1" 304 -
+Jan 23 22:00:09 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:09] "GET /static/frb_sf_logo.jpg HTTP/1.1" 304 -
+Jan 23 22:00:11 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:11] "GET /processing_status HTTP/1.1" 200 -
+Jan 23 22:00:12 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:12] "GET / HTTP/1.1" 200 -
+Jan 23 22:00:12 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:12] "GET /static/css/enterprise.css HTTP/1.1" 304 -
+Jan 23 22:00:12 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.144 - - [23/Jan/2026 22:00:12] "GET /static/frb_sf_logo.jpg HTTP/1.1" 304 -
+Jan 23 22:00:14 ip-10-147-73-35.ec2.internal python3.11[9247]: INFO:werkzeug:10.147.73.14--output truncated--
