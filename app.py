@@ -583,6 +583,35 @@ def update_summary(article_id):
     finally:
         db.close()
 
+@app.route('/get_new_articles')
+def get_new_articles():
+    since_id = request.args.get('since_id', 0, type=int)
+    db = SessionLocal()
+    try:
+        new_articles = db.query(Article).options(
+            joinedload(Article.feed)
+        ).filter(Article.id > since_id).order_by(Article.id.asc()).limit(50).all()
+        
+        articles_data = []
+        for article in new_articles:
+            articles_data.append({
+                'id': article.id,
+                'title': article.title,
+                'url': article.url,
+                'summary': article.summary,
+                'author': article.author or 'Unknown',
+                'feed_name': article.feed.name if article.feed else 'Unknown',
+                'published_date': article.published_date.strftime('%b %d, %Y at %H:%M'),
+                'category_name': article.category_name or '',
+                'category_color': article.category_color or '#6c757d',
+                'relevancy_score': article.relevancy_score,
+                'user_feedback': article.user_feedback
+            })
+        
+        return jsonify({'articles': articles_data})
+    finally:
+        db.close()
+
 @app.route('/rate_article/<int:article_id>', methods=['POST'])
 def rate_article(article_id):
     data = request.json

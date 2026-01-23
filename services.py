@@ -180,11 +180,15 @@ Avoid redundant information.
 
 Match against Categories: {categories_text}
 
-IMPORTANT: Return ONLY valid JSON, no explanatory text before or after.
+IMPORTANT RULES:
+1. Return ONLY valid JSON, no explanatory text before or after
+2. The "category" field MUST be EXACTLY one of these values: {categories_text}
+3. Do NOT create new category names or use variations
+4. If the article doesn't match any category well, use an empty string ""
 
 Return JSON with:
 - "bullets": list of summary bullets (empty array if not relevant)
-- "category": the single best matching category name from the list provided (empty string if not relevant)
+- "category": MUST be exactly one of [{categories_text}] or empty string
 - "relevancy_score": integer (0-100) representing how relevant the article is to the topics and categories
 - "author": extracted author name (use provided Author if valid, otherwise try to extract from Content)
 
@@ -215,7 +219,21 @@ Return ONLY this JSON format:
                 end_idx = json_str.rfind('}') + 1
                 json_str = json_str[start_idx:end_idx]
             
-            result = json.loads(json_str)
+            # Robust JSON parsing with error recovery
+            try:
+                result = json.loads(json_str)
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error: {e}. Attempting to fix common issues...")
+                # Try to fix common JSON issues
+                json_str = json_str.replace("'", '"')  # Replace single quotes
+                json_str = json_str.replace('\n', ' ')  # Remove newlines
+                json_str = json_str.replace('  ', ' ')  # Remove double spaces
+                try:
+                    result = json.loads(json_str)
+                    logger.info("JSON parsing recovered after cleanup")
+                except:
+                    logger.error(f"Failed to parse JSON even after cleanup: {json_str[:200]}")
+                    return {"summary": "Analysis failed", "quotes": "", "category": "", "relevancy_score": 0, "author": ""}
             
             if isinstance(result, dict):
                 bullets = result.get("bullets", [])
@@ -439,11 +457,11 @@ class NewsProcessor:
                         print(f"  -> Analyzing with AI...")
                         print(f"  -> Available categories: {[c.name for c in categories]}")
                         print(f"  -> Using topics: {[t.name for t in topics]}")
-                        time.sleep(1)
+                        time.sleep(2)  # Increased from 1 to 2 seconds to avoid any throttling
                         analysis = self.ai_service.analyze_article(entry_title, entry_author, content, entry_link, categories, topics)
                         
                         # Skip articles with failed analysis
-                        if analysis.get("summary", "") == "Analysis failed":
+                        if not analysis or analysis.get("summary", "") == "Analysis failed":
                             print(f"  -> Skipping due to AI analysis failure")
                             continue
                         
@@ -464,23 +482,18 @@ class NewsProcessor:
                         # Filter articles with low relevancy score
                         if relevancy_score < 60:
                             print(f"  -> Skipping: Low relevancy score ({relevancy_score} < 60)")
-                            # We can choose to either not save it, or save it as uncategorized.
-                            # "filter articles that are not relevant to the categories" implies discarding or not mapping.
-                            # User said: "do not map an article to any category if it's relevancy score is less than 75%."
-                            # Usually this means we can leave category_name empty if we still want it, 
-                            # or if "filter articles" means exclude, we skip.
-                            # Given "filter articles" is a strong term, I will skip saving them effectively acting as a filter.
-                            # However, if it's general news, maybe we want it? 
-                            # Let's interpret strict filtering: If not relevant enough to ANY category, discard.
-                            # Wait, the prompt asks for "the single best matching category". 
-                            # If even the best matching is < 75, then it's not relevant to our interests defined by categories.
                             continue
                         
-                        # Case-insensitive category matching
+                        # Case-insensitive category matching with strict validation
+                        if not category_name or category_name.strip() == "":
+                            print(f"  -> Skipping: No category assigned by AI")
+                            continue
+                            
                         category = next((c for c in categories if c.name.lower() == category_name.lower()), None)
                         
                         if not category:
-                            print(f"  -> WARNING: AI returned category '{category_name}' not found in DB categories")
+                            print(f"  -> WARNING: AI returned invalid category '{category_name}'")
+                            print(f"  -> Valid categories are: {[c.name for c in categories]}")
                             print(f"  -> Skipping article due to invalid category")
                             continue
                         
