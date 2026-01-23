@@ -114,18 +114,25 @@
 <div id="progress-monitor" class="card-enterprise mb-4" style="display: none;">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Processing News Feeds...</h5>
+            <div class="d-flex align-items-center gap-2">
+                <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> <span id="progress-title">Processing News Feeds...</span></h5>
+                <span id="progress-compact" class="text-muted small" style="display: none;"></span>
+            </div>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-sm btn-danger" onclick="stopProcessing()" id="stopBtn">
                     <i class="bi bi-stop-circle"></i> Stop
                 </button>
-                <button type="button" class="btn-close" onclick="document.getElementById('progress-monitor').style.display='none'"></button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleProgressCollapse()" id="collapseBtn" title="Collapse">
+                    <i class="bi bi-chevron-up"></i>
+                </button>
             </div>
         </div>
-        <div class="progress progress-enterprise mb-2">
-            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+        <div id="progress-details">
+            <div class="progress progress-enterprise mb-2">
+                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+            </div>
+            <div id="progress-status" class="small text-muted">Initializing...</div>
         </div>
-        <div id="progress-status" class="small text-muted">Initializing...</div>
     </div>
 </div>
 
@@ -451,6 +458,10 @@
                         <strong>${data.saved}</strong> saved | 
                         Current: ${data.current_article || 'Initializing...'}`;
                     
+                    // Update compact info for collapsed state
+                    document.getElementById('progress-compact').textContent = 
+                        `${percent}% (${data.saved} saved)`;
+                    
                     // Fetch new articles while processing
                     fetchNewArticles();
                     
@@ -688,6 +699,28 @@
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-stop-circle"></i> Stop';
             });
+    }
+
+    // Toggle progress monitor collapse/uncollapse
+    function toggleProgressCollapse() {
+        const details = document.getElementById('progress-details');
+        const compactInfo = document.getElementById('progress-compact');
+        const collapseBtn = document.getElementById('collapseBtn');
+        const icon = collapseBtn.querySelector('i');
+        
+        if (details.style.display === 'none') {
+            // Uncollapse - show details
+            details.style.display = 'block';
+            compactInfo.style.display = 'none';
+            icon.className = 'bi bi-chevron-up';
+            collapseBtn.title = 'Collapse';
+        } else {
+            // Collapse - hide details, show compact info
+            details.style.display = 'none';
+            compactInfo.style.display = 'inline';
+            icon.className = 'bi bi-chevron-down';
+            collapseBtn.title = 'Expand';
+        }
     }
 
     // Refresh News with loading state
