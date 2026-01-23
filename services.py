@@ -157,26 +157,33 @@ class AIService:
             self.bedrock_client = None
             self.aws_available = False
     
-    def analyze_article(self, title, author, content, url, categories):
+    def analyze_article(self, title, author, content, url, categories, topics=None):
         categories_list = [cat.name for cat in categories]
         categories_text = ", ".join(categories_list)
         
-        prompt = f"""Create an executive briefing from this article.
-Merge the key facts, direct quotes, and overall summary into a unified list of 4-5 bulleted statements.
-Include direct quotes as is inside the bullets where relevant.
-Avoid redundant information.
-Also extract the author name if available in the text.
+        # Build relevancy criteria from topics if provided
+        relevancy_section = ""
+        if topics:
+            relevancy_section = "\n\nRELEVANCY CRITERIA:\nThe article should be related to these topics and keywords:\n"
+            for topic in topics:
+                relevancy_section += f"- {topic.name}: {topic.keywords}\n"
+            relevancy_section += "\nScore 75+ only if the article directly relates to these topics."
+        
+        prompt = f"""Analyze this article and create an executive briefing.
 
 Title: {title}
 Author: {author}
-Content: {content[:2500]}
+Content: {content[:2500]}{relevancy_section}
+
+Create a unified list of 4-5 bulleted statements merging key facts and quotes.
+Avoid redundant information.
 
 Match against Categories: {categories_text}
 
 Return JSON with:
 - "bullets": list of summary bullets
-- "category": the single best matching category name from the list provided.
-- "relevancy_score": integer (0-100) representing how relevant the article is to that category.
+- "category": the single best matching category name from the list provided
+- "relevancy_score": integer (0-100) representing how relevant the article is to the topics and categories
 - "author": extracted author name (use provided Author if valid, otherwise try to extract from Content)
 
 Return JSON:
@@ -338,6 +345,7 @@ class NewsProcessor:
             db = get_db()
             feeds = db.query(Feed).filter(Feed.active == True).all()
             categories = db.query(Category).filter(Category.active == True).all()
+            topics = db.query(Topic).filter(Topic.active == True).all()
             
             if not categories:
                 return "No active categories found"
@@ -419,8 +427,9 @@ class NewsProcessor:
                         
                         print(f"  -> Analyzing with AI...")
                         print(f"  -> Available categories: {[c.name for c in categories]}")
+                        print(f"  -> Using topics: {[t.name for t in topics]}")
                         time.sleep(1)
-                        analysis = self.ai_service.analyze_article(entry_title, entry_author, content, entry_link, categories)
+                        analysis = self.ai_service.analyze_article(entry_title, entry_author, content, entry_link, categories, topics)
                         
                         # Skip articles with failed analysis
                         if analysis.get("summary", "") == "Analysis failed":
