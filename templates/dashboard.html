@@ -538,7 +538,7 @@
             // Initialize category chart if not already initialized
             if (!window.categoryChart) {
                 const ctx = document.getElementById('categoryChart');
-                if (ctx && window.categoryColors) {
+                if (ctx) {
                     window.categoryChart = new Chart(ctx, {
                         type: 'doughnut',
                         data: {
