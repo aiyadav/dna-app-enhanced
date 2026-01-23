@@ -624,6 +624,14 @@
         const customBtn = document.getElementById('customBtn');
         
         if (customInputs.style.display === 'none') {
+            // Reset other filters when opening custom date
+            document.getElementById('todayBtn').classList.remove('btn-primary');
+            document.getElementById('todayBtn').classList.add('btn-outline-primary');
+            document.getElementById('todayDate').style.display = 'none';
+            document.getElementById('weekBtn').classList.remove('btn-primary');
+            document.getElementById('weekBtn').classList.add('btn-outline-primary');
+            document.getElementById('weekDate').style.display = 'none';
+            
             customInputs.style.display = 'block';
             customBtn.classList.remove('btn-outline-primary');
             customBtn.classList.add('btn-primary');
@@ -631,6 +639,13 @@
             customInputs.style.display = 'none';
             customBtn.classList.remove('btn-primary');
             customBtn.classList.add('btn-outline-primary');
+            document.getElementById('customDate').style.display = 'none';
+            
+            // Clear filters and show all articles
+            const articles = document.querySelectorAll('.article-card');
+            articles.forEach(article => article.style.display = 'block');
+            updateResultCount(articles.length);
+            hideFilterIndicator();
         }
     }
     
@@ -651,13 +666,17 @@
     }
     
     function filterByTime(period) {
-        // Reset all button states and date displays
+        // Reset ALL button states and date displays
         document.getElementById('todayBtn').classList.remove('btn-primary');
         document.getElementById('todayBtn').classList.add('btn-outline-primary');
         document.getElementById('todayDate').style.display = 'none';
         document.getElementById('weekBtn').classList.remove('btn-primary');
         document.getElementById('weekBtn').classList.add('btn-outline-primary');
         document.getElementById('weekDate').style.display = 'none';
+        document.getElementById('customBtn').classList.remove('btn-primary');
+        document.getElementById('customBtn').classList.add('btn-outline-primary');
+        document.getElementById('customDate').style.display = 'none';
+        document.getElementById('customDateInputs').style.display = 'none';
         
         // Set active button
         const activeBtn = period === 'today' ? 'todayBtn' : 'weekBtn';
