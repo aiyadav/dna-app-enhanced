@@ -736,7 +736,6 @@
     }
     
     function updateCategoryStats() {
-        // Count articles per category
         const categoryCount = {};
         const categoryColorMap = {};
         
@@ -754,20 +753,19 @@
         
         console.log('Category counts:', categoryCount);
         
-        // Update category list badges
         document.querySelectorAll('.category-list-item').forEach(item => {
-            const categoryName = item.querySelector('.fw-500').textContent.trim();
+            const nameEl = item.querySelector('.fw-500');
             const badge = item.querySelector('.badge-enterprise');
-            if (badge) {
+            if (nameEl && badge) {
+                const categoryName = nameEl.textContent.trim();
                 badge.textContent = categoryCount[categoryName] || 0;
             }
         });
         
-        // Update category chart if it exists
-        if (window.categoryChart) {
+        if (window.categoryChart && window.categoryChart.data) {
             const labels = Object.keys(categoryCount);
             const data = Object.values(categoryCount);
-            const colors = labels.map(cat => categoryColorMap[cat] || window.categoryColors?.[cat] || '#6c757d');
+            const colors = labels.map(cat => categoryColorMap[cat] || '#6c757d');
             
             window.categoryChart.data.labels = labels;
             window.categoryChart.data.datasets[0].data = data;
