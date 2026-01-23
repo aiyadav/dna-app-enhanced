@@ -140,7 +140,7 @@
             <div class="row g-3 mb-3">
                 <div class="col-12">
                     <div class="stats-card">
-                        <div class="stats-number">{{ total_articles }}</div>
+                        <div class="stats-number" id="totalArticlesCount">{{ total_articles }}</div>
                         <div class="stats-label">Total Articles</div>
                     </div>
                 </div>
@@ -159,7 +159,7 @@
                         </div>
                         <div class="col-6">
                             <div class="quick-stat-item">
-                                <div class="quick-stat-number">{{ articles | selectattr('relevancy_score') | list | length }}</div>
+                                <div class="quick-stat-number" id="scoredArticlesCount">{{ articles | selectattr('relevancy_score') | list | length }}</div>
                                 <div class="quick-stat-label">Scored</div>
                             </div>
                         </div>
@@ -486,6 +486,9 @@
             return;
         }
         
+        // Update live counters
+        updateLiveCounters();
+        
         const articleHTML = `
             <div class="article-card" data-article-id="${article.id}" style="animation: slideIn 0.5s ease-out;">
                 <h3 class="mb-3">
@@ -584,6 +587,25 @@
             .replace(/[^\w\s-]/g, '')
             .replace(/[\s_-]+/g, '-')
             .replace(/^-+|-+$/g, '');
+    }
+    
+    function updateLiveCounters() {
+        // Count total visible articles
+        const totalArticles = document.querySelectorAll('.article-card').length;
+        const totalCountEl = document.getElementById('totalArticlesCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = totalArticles;
+        }
+        
+        // Count articles with relevancy scores
+        const scoredArticles = document.querySelectorAll('.article-card .badge-enterprise.bg-light.text-dark.border').length;
+        const scoredCountEl = document.getElementById('scoredArticlesCount');
+        if (scoredCountEl) {
+            scoredCountEl.textContent = scoredArticles;
+        }
+        
+        // Update result count badge
+        updateResultCount(totalArticles);
     }
     
     // Add CSS animation for new articles
