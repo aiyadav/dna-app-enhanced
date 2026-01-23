@@ -180,13 +180,15 @@ Avoid redundant information.
 
 Match against Categories: {categories_text}
 
+IMPORTANT: Return ONLY valid JSON, no explanatory text before or after.
+
 Return JSON with:
-- "bullets": list of summary bullets
-- "category": the single best matching category name from the list provided
+- "bullets": list of summary bullets (empty array if not relevant)
+- "category": the single best matching category name from the list provided (empty string if not relevant)
 - "relevancy_score": integer (0-100) representing how relevant the article is to the topics and categories
 - "author": extracted author name (use provided Author if valid, otherwise try to extract from Content)
 
-Return JSON:
+Return ONLY this JSON format:
 {{"bullets": ["Bullet 1", "Bullet 2", ...], "category": "category_name", "relevancy_score": 85, "author": "Author Name"}}"""
         
         try:
@@ -204,7 +206,16 @@ Return JSON:
             response_body = json.loads(response['body'].read())
             response_text = response_body['content'][0]['text']
             logger.info(f"AI raw response: {response_text}")
-            result = json.loads(response_text)
+            
+            # Extract JSON from response (handle cases where AI adds explanatory text)
+            json_str = response_text.strip()
+            # Try to find JSON object in the response
+            if '{' in json_str:
+                start_idx = json_str.find('{')
+                end_idx = json_str.rfind('}') + 1
+                json_str = json_str[start_idx:end_idx]
+            
+            result = json.loads(json_str)
             
             if isinstance(result, dict):
                 bullets = result.get("bullets", [])
