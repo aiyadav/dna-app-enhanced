@@ -81,6 +81,11 @@
                 </button>
             </div>
             <div class="col-auto">
+                <button class="btn btn-sm btn-outline-primary" id="customBtn" onclick="toggleCustomDate()">
+                    <i class="bi bi-calendar-range"></i> Custom Date
+                </button>
+            </div>
+            <div class="col-auto" id="customDateInputs" style="display: none;">
                 <div class="input-group input-group-sm" style="width: auto;">
                     <input type="date" class="form-control form-control-sm" id="startDate" style="width: 140px;">
                     <span class="input-group-text">to</span>
@@ -611,6 +616,21 @@
     
     let activeTimeFilter = null;
     
+    function toggleCustomDate() {
+        const customInputs = document.getElementById('customDateInputs');
+        const customBtn = document.getElementById('customBtn');
+        
+        if (customInputs.style.display === 'none') {
+            customInputs.style.display = 'block';
+            customBtn.classList.remove('btn-outline-primary');
+            customBtn.classList.add('btn-primary');
+        } else {
+            customInputs.style.display = 'none';
+            customBtn.classList.remove('btn-primary');
+            customBtn.classList.add('btn-outline-primary');
+        }
+    }
+    
     function showFilterIndicator(text) {
         const indicator = document.getElementById('filterIndicator');
         const filterText = document.getElementById('filterText');
@@ -704,6 +724,10 @@
         document.getElementById('weekBtn').classList.remove('btn-primary');
         document.getElementById('weekBtn').classList.add('btn-outline-primary');
         
+        // Keep custom button active
+        document.getElementById('customBtn').classList.remove('btn-outline-primary');
+        document.getElementById('customBtn').classList.add('btn-primary');
+        
         activeTimeFilter = 'custom';
         
         const startDate = new Date(startDateInput);
@@ -747,15 +771,18 @@
         document.getElementById('searchInput').value = '';
         document.getElementById('categoryFilter').value = '';
         
-        // Reset date inputs
+        // Reset date inputs and hide custom date section
         document.getElementById('startDate').value = '';
         document.getElementById('endDate').value = '';
+        document.getElementById('customDateInputs').style.display = 'none';
         
         // Reset time filter buttons
         document.getElementById('todayBtn').classList.remove('btn-primary');
         document.getElementById('todayBtn').classList.add('btn-outline-primary');
         document.getElementById('weekBtn').classList.remove('btn-primary');
         document.getElementById('weekBtn').classList.add('btn-outline-primary');
+        document.getElementById('customBtn').classList.remove('btn-primary');
+        document.getElementById('customBtn').classList.add('btn-outline-primary');
         
         activeTimeFilter = null;
         
