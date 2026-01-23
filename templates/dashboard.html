@@ -736,42 +736,46 @@
     }
     
     function updateCategoryStats() {
-        const categoryCount = {};
-        const categoryColorMap = {};
-        
-        document.querySelectorAll('.article-card').forEach(article => {
-            const categoryBadge = article.querySelector('.badge-enterprise[style*="background-color"]');
-            if (categoryBadge) {
-                const categoryName = categoryBadge.textContent.trim();
-                const colorMatch = categoryBadge.getAttribute('style').match(/background-color:\s*([^;]+)/);
-                const color = colorMatch ? colorMatch[1].trim() : '#6c757d';
-                
-                categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1;
-                categoryColorMap[categoryName] = color;
-            }
-        });
-        
-        console.log('Category counts:', categoryCount);
-        
-        document.querySelectorAll('.category-list-item').forEach(item => {
-            const nameEl = item.querySelector('.fw-500');
-            const badge = item.querySelector('.badge-enterprise');
-            if (nameEl && badge) {
-                const categoryName = nameEl.textContent.trim();
-                badge.textContent = categoryCount[categoryName] || 0;
-            }
-        });
-        
-        if (window.categoryChart && window.categoryChart.data) {
-            const labels = Object.keys(categoryCount);
-            const data = Object.values(categoryCount);
-            const colors = labels.map(cat => categoryColorMap[cat] || '#6c757d');
+        try {
+            const categoryCount = {};
+            const categoryColorMap = {};
             
-            window.categoryChart.data.labels = labels;
-            window.categoryChart.data.datasets[0].data = data;
-            window.categoryChart.data.datasets[0].backgroundColor = colors;
-            window.categoryChart.update();
-            console.log('Updated category chart');
+            document.querySelectorAll('.article-card').forEach(article => {
+                const categoryBadge = article.querySelector('.badge-enterprise[style*="background-color"]');
+                if (categoryBadge) {
+                    const categoryName = categoryBadge.textContent.trim();
+                    const colorMatch = categoryBadge.getAttribute('style').match(/background-color:\s*([^;]+)/);
+                    const color = colorMatch ? colorMatch[1].trim() : '#6c757d';
+                    
+                    categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1;
+                    categoryColorMap[categoryName] = color;
+                }
+            });
+            
+            console.log('Category counts:', categoryCount);
+            
+            document.querySelectorAll('.category-list-item').forEach(item => {
+                const nameEl = item.querySelector('.fw-500');
+                const badge = item.querySelector('.badge-enterprise');
+                if (nameEl && badge) {
+                    const categoryName = nameEl.textContent.trim();
+                    badge.textContent = categoryCount[categoryName] || 0;
+                }
+            });
+            
+            if (window.categoryChart && window.categoryChart.data) {
+                const labels = Object.keys(categoryCount);
+                const data = Object.values(categoryCount);
+                const colors = labels.map(cat => categoryColorMap[cat] || '#6c757d');
+                
+                window.categoryChart.data.labels = labels;
+                window.categoryChart.data.datasets[0].data = data;
+                window.categoryChart.data.datasets[0].backgroundColor = colors;
+                window.categoryChart.update();
+                console.log('Updated category chart');
+            }
+        } catch (error) {
+            console.error('Error in updateCategoryStats:', error);
         }
     }
     
