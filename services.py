@@ -108,6 +108,10 @@ class AIService:
         from dotenv import load_dotenv
         load_dotenv()
         
+        self.bedrock_client = None
+        self.aws_available = False
+        self.model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+        
         try:
             # Get model configuration from database
             from database import SessionLocal, SystemConfig
@@ -116,7 +120,8 @@ class AIService:
             db = SessionLocal()
             try:
                 model_config = db.query(SystemConfig).filter(SystemConfig.key == 'llm_model').first()
-                self.model_id = model_config.value if model_config else "anthropic.claude-3-haiku-20240307-v1:0"
+                if model_config:
+                    self.model_id = model_config.value
             finally:
                 db.close()
             
@@ -126,16 +131,16 @@ class AIService:
             
             if on_ec2:
                 # On EC2: Use instance role (profile_name stays None)
-                logger.info("Detected EC2 environment, using IAM instance role")
+                logger.info("AIService: Detected EC2 environment, using IAM instance role")
             else:
                 # Local: Try AWS_PROFILE from env, then fall back to config
                 profile_name = os.environ.get('AWS_PROFILE', '').strip() or None
                 if not profile_name:
                     profile_name = IAM_CONFIG.get('iam_role_name', '').strip() or None
                 if profile_name:
-                    logger.info(f"Using AWS profile: {profile_name}")
+                    logger.info(f"AIService: Using AWS profile: {profile_name}")
                 else:
-                    logger.info("Using default AWS credential chain")
+                    logger.info("AIService: Using default AWS credential chain")
             
             region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
             
@@ -143,14 +148,14 @@ class AIService:
                 session = boto3.Session(profile_name=profile_name)
             else:
                 session = boto3.Session()
+            
             self.bedrock_client = session.client('bedrock-runtime', region_name=region_name)
             self.aws_available = True
-            logger.info(f"AWS Bedrock initialized with model: {self.model_id}, profile: {profile_name}, region: {region_name}")
+            logger.info(f"AIService: AWS Bedrock initialized successfully - model: {self.model_id}, region: {region_name}")
         except Exception as e:
-            logger.warning(f"AWS Bedrock not available: {e}")
+            logger.error(f"AIService: Failed to initialize AWS Bedrock: {e}", exc_info=True)
             self.bedrock_client = None
             self.aws_available = False
-            self.model_id = "anthropic.claude-3-haiku-20240307-v1:0"
     
     def analyze_article(self, title, author, content, url, categories):
         categories_list = [cat.name for cat in categories]
