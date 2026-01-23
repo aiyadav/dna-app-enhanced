@@ -58,14 +58,14 @@ iam_config = load_iam_config()
 on_ec2 = is_running_on_ec2()
 
 if on_ec2:
-    # On EC2: Remove AWS_PROFILE if it exists to force instance role usage
+    # On EC2: Remove AWS_PROFILE from environment to force instance role usage
     if 'AWS_PROFILE' in os.environ:
         del os.environ['AWS_PROFILE']
     print("Running on EC2: Using instance IAM role for authentication")
 else:
     # Local: Ensure AWS_PROFILE is set
     if not os.environ.get('AWS_PROFILE'):
-        profile = os.getenv('AWS_PROFILE', '').strip() or iam_config.get('iam_role_name', '')
+        profile = iam_config.get('iam_role_name', '')
         if profile:
             os.environ['AWS_PROFILE'] = profile
     print(f"Local development: AWS_PROFILE set to {os.environ.get('AWS_PROFILE', 'default')}")
@@ -246,15 +246,15 @@ def test_bedrock_connection():
             region = 'us-east-1'
         
         # Determine if we should use profile or instance role
-        on_ec2 = is_running_on_ec2()
+        on_ec2_now = is_running_on_ec2()
         
-        if on_ec2:
+        if on_ec2_now:
             # On EC2: Use instance role (no profile)
             print(f"Testing Bedrock on EC2 - Using instance role, Region: '{region}'")
             session = boto3.Session()
         else:
-            # Local: Use profile if available
-            profile_name = os.environ.get('AWS_PROFILE', '').strip()
+            # Local: Use profile from YAML config
+            profile_name = iam_config.get('iam_role_name', '').strip()
             print(f"Testing Bedrock locally - Profile: '{profile_name}', Region: '{region}'")
             if profile_name:
                 session = boto3.Session(profile_name=profile_name)
