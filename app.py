@@ -19,7 +19,14 @@ def load_iam_config():
         return {'default_region': 'us-east-1'}
 
 def is_running_on_ec2():
-    """Detect if running on EC2 by checking instance metadata"""
+    """Detect if running on EC2 by checking instance metadata and IAM role"""
+    # Check explicit environment variable first
+    env_override = os.environ.get('USE_EC2_ROLE', '').lower()
+    if env_override == 'true':
+        return True
+    elif env_override == 'false':
+        return False
+    
     try:
         # Try IMDSv2 first
         token_response = requests.put(
