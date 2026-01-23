@@ -569,9 +569,6 @@
             }
         }
         
-        // Update live counters
-        updateLiveCounters();
-        
         // Find the articles list container
         let articlesList = document.getElementById('articles-list');
         if (!articlesList) {
@@ -652,9 +649,12 @@
             articlesList.insertAdjacentHTML('beforeend', articleHTML);
         }
         
-        // Update counters after adding article
-        console.log('Article added, updating counters...');
-        updateLiveCounters();
+        console.log('Article HTML inserted, updating counters...');
+        
+        // CRITICAL: Update counters AFTER article is in DOM
+        setTimeout(() => {
+            updateLiveCounters();
+        }, 50);
     }
     
     function formatSummary(summary) {
