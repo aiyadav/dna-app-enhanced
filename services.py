@@ -122,6 +122,7 @@ class AIService:
             
             # Determine if we should use profile or instance role
             on_ec2 = is_running_on_ec2()
+            profile_name = None
             
             if on_ec2:
                 # On EC2: Use instance role (profile_name stays None)
@@ -247,6 +248,7 @@ class NewsProcessor:
             
             # Determine if we should use profile or instance role
             on_ec2 = is_running_on_ec2()
+            profile_name = None
             
             if on_ec2:
                 # On EC2: Use instance role (profile_name stays None)
