@@ -96,6 +96,17 @@
                         showToast(data.message, 'success');
                         // Start progress monitoring if checkProgress exists
                         if (typeof checkProgress === 'function') {
+                            // Show progress monitor and set processing flag
+                            const progressMonitor = document.getElementById('progress-monitor');
+                            if (progressMonitor) {
+                                progressMonitor.style.display = 'block';
+                            }
+                            if (typeof isProcessing !== 'undefined') {
+                                isProcessing = true;
+                            }
+                            if (typeof progressCheckCount !== 'undefined') {
+                                progressCheckCount = 0;
+                            }
                             setTimeout(checkProgress, 500);
                         } else {
                             setTimeout(() => location.reload(), 2000);
