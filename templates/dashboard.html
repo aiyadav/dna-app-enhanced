@@ -418,7 +418,16 @@
 
 <script>
     // Progress monitoring
+    let progressCheckCount = 0;
+    const MAX_PROGRESS_CHECKS = 3600; // 30 minutes at 500ms intervals
+    
     function checkProgress() {
+        if (progressCheckCount++ > MAX_PROGRESS_CHECKS) {
+            console.log('Progress check timeout - reloading page');
+            location.reload();
+            return;
+        }
+        
         fetch('/processing_status')
             .then(response => response.json())
             .then(data => {
@@ -433,8 +442,15 @@
                         Current: ${data.current_article || 'Initializing...'}`;
                     setTimeout(checkProgress, 500);
                 } else if (document.getElementById('progress-monitor').style.display === 'block') {
+                    // Processing complete - reload to show new articles
+                    progressCheckCount = 0;
                     location.reload();
                 }
+            })
+            .catch(error => {
+                console.error('Progress check error:', error);
+                // Retry on error
+                setTimeout(checkProgress, 1000);
             });
     }
     
