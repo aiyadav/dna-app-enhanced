@@ -548,42 +548,43 @@
             noArticlesMsg.style.display = 'none';
             articlesContainer.style.display = '';
             articlesContainer.classList.add('row');
-            
-            // Initialize category chart
-            if (!window.categoryChart) {
-                const ctx = document.getElementById('categoryChart');
-                console.log('Initializing category chart, canvas element:', ctx);
-                if (ctx) {
-                    window.categoryChart = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: [],
-                            datasets: [{
-                                data: [],
-                                backgroundColor: [],
-                                borderWidth: 2,
-                                borderColor: '#fff'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        padding: 10,
-                                        font: { size: 11 }
-                                    }
+            console.log('Showed articles container');
+        }
+        
+        // ALWAYS ensure category chart is initialized before updating
+        if (!window.categoryChart) {
+            const ctx = document.getElementById('categoryChart');
+            console.log('Initializing category chart, canvas element:', ctx);
+            if (ctx) {
+                window.categoryChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: [],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 10,
+                                    font: { size: 11 }
                                 }
                             }
                         }
-                    });
-                    console.log('✓ Category chart initialized successfully');
-                    console.log('Chart object:', window.categoryChart);
-                } else {
-                    console.error('Canvas element not found!');
-                }
+                    }
+                });
+                console.log('✓ Category chart initialized successfully');
+                console.log('Chart object:', window.categoryChart);
+            } else {
+                console.error('Canvas element not found!');
             }
         }
         
@@ -676,11 +677,14 @@
         requestAnimationFrame(() => {
             console.log('Updating counters via requestAnimationFrame');
             updateLiveCounters();
-            // Force category update separately to ensure it runs
-            setTimeout(() => {
-                console.log('Force updating category stats after 100ms');
+        });
+        
+        // Update category stats with a small delay to ensure DOM is ready
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                console.log('Force updating category stats (double RAF)');
                 updateCategoryStats();
-            }, 100);
+            });
         });
     }
     
