@@ -1529,7 +1529,7 @@
     window.addEventListener('load', function() {
         const hint = document.createElement('div');
         hint.className = 'keyboard-hint';
-        hint.innerHTML = '<i class="bi bi-keyboard"></i> Press <kbd>Ctrl+K</kbd> to search';
+        hint.innerHTML = '<i class="bi bi-keyboard"></i> Press <kbd style="background: rgba(255,255,255,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">Ctrl+K</kbd> to search';
         hint.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: var(--frb-primary); color: white; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; box-shadow: var(--shadow-md); z-index: 1000; opacity: 0; transition: opacity 0.3s;';
         document.body.appendChild(hint);
         
