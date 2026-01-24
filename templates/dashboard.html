@@ -452,6 +452,7 @@
 {% endif %}
 
 <script>
+    // Cache buster: {{ range(1, 999999999) | random }}
     // Progress monitoring with live article updates
     let progressCheckCount = 0;
     const MAX_PROGRESS_CHECKS = 3600; // 30 minutes at 500ms intervals
@@ -730,9 +731,6 @@
             resultCountEl.textContent = `${totalArticles} article${totalArticles !== 1 ? 's' : ''}`;
             console.log('Updated resultCount:', resultCountEl.textContent);
         }
-        
-        // Update category distribution and list
-        updateCategoryStats();
     }
     
     function updateCategoryStats() {
