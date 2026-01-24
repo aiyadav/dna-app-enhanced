@@ -552,14 +552,20 @@
         }
         
         // CRITICAL: Initialize chart IMMEDIATELY when first article arrives
-        if (!window.categoryChart) {
-            console.log('*** CHART DOES NOT EXIST - INITIALIZING NOW ***');
+        if (!window.categoryChart || !window.categoryChart.data) {
+            console.log('*** CHART DOES NOT EXIST OR INVALID - INITIALIZING NOW ***');
             const ctx = document.getElementById('categoryChart');
             console.log('Canvas element:', ctx);
             console.log('Chart.js available:', typeof Chart !== 'undefined');
+            console.log('Current categoryChart value:', window.categoryChart);
             
             if (ctx && typeof Chart !== 'undefined') {
                 try {
+                    // Destroy existing chart if it's not a proper Chart instance
+                    if (window.categoryChart && typeof window.categoryChart.destroy === 'function') {
+                        window.categoryChart.destroy();
+                    }
+                    
                     window.categoryChart = new Chart(ctx, {
                         type: 'doughnut',
                         data: {
@@ -586,6 +592,8 @@
                         }
                     });
                     console.log('✓✓✓ CHART INITIALIZED IN addArticleToPage ✓✓✓');
+                    console.log('New chart object:', window.categoryChart);
+                    console.log('Chart has data property:', !!window.categoryChart.data);
                 } catch (error) {
                     console.error('!!! CHART INIT ERROR !!!', error);
                 }
@@ -593,7 +601,7 @@
                 console.error('!!! Canvas or Chart.js not available !!!');
             }
         } else {
-            console.log('Chart already exists');
+            console.log('Chart already exists and is valid');
         }
         
         // Find articles list container
