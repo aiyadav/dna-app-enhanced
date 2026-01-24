@@ -673,18 +673,10 @@
         
         console.log('Article HTML inserted into DOM');
         
-        // Update counters AND category stats immediately after DOM insertion
+        // Update everything in one go
         requestAnimationFrame(() => {
-            console.log('Updating counters via requestAnimationFrame');
+            console.log('Updating all counters and charts via requestAnimationFrame');
             updateLiveCounters();
-        });
-        
-        // Update category stats with a small delay to ensure DOM is ready
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                console.log('Force updating category stats (double RAF)');
-                updateCategoryStats();
-            });
         });
     }
     
@@ -748,7 +740,47 @@
             console.log('Updated resultCount:', resultCountEl.textContent);
         }
         
-        console.log('updateLiveCounters completed, will call updateCategoryStats next');
+        // INLINE category stats update - same as counters above
+        const categoryCount = {};
+        const categoryColorMap = {};
+        
+        document.querySelectorAll('.article-card').forEach(article => {
+            const categoryBadge = article.querySelector('.badge-enterprise[style*="background-color"]');
+            if (categoryBadge) {
+                const categoryName = categoryBadge.textContent.trim();
+                const colorMatch = categoryBadge.getAttribute('style').match(/background-color:\s*([^;]+)/);
+                const color = colorMatch ? colorMatch[1].trim() : '#6c757d';
+                categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1;
+                categoryColorMap[categoryName] = color;
+            }
+        });
+        
+        console.log('Category counts:', categoryCount);
+        
+        // Update category list badges
+        document.querySelectorAll('.category-list-item').forEach(item => {
+            const nameEl = item.querySelector('.fw-500');
+            const badge = item.querySelector('.badge-enterprise');
+            if (nameEl && badge) {
+                const categoryName = nameEl.textContent.trim();
+                badge.textContent = categoryCount[categoryName] || 0;
+            }
+        });
+        
+        // Update chart if it exists
+        if (window.categoryChart && window.categoryChart.data) {
+            const labels = Object.keys(categoryCount);
+            const data = Object.values(categoryCount);
+            const colors = labels.map(cat => categoryColorMap[cat] || '#6c757d');
+            
+            window.categoryChart.data.labels = labels;
+            window.categoryChart.data.datasets[0].data = data;
+            window.categoryChart.data.datasets[0].backgroundColor = colors;
+            window.categoryChart.update('none');
+            console.log('✓ Category chart updated');
+        }
+        
+        console.log('updateLiveCounters completed');
     }
     
     function updateCategoryStats() {
