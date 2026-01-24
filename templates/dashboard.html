@@ -435,10 +435,10 @@
                     <h5 class="fw-bold mb-3"><i class="bi bi-folder"></i> Categories</h5>
                     <div class="d-grid gap-2" id="category-list">
                         {% for category in categories %}
-                        <a href="#category-{{ category.name | slugify }}" class="category-list-item text-decoration-none" style="border-left: 4px solid {{ category.color }}; cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-500">{{ category.name }}</span>
-                                <span class="badge badge-enterprise" style="background-color: {{ category.color }};">0</span>
+                        <a href="#category-{{ category.name | slugify }}" class="category-list-item text-decoration-none" style="border-left: 4px solid {{ category.color }}; cursor: pointer; display: none;">
+                            <div class="d-flex justify-content-between align-items-center" style="cursor: pointer;">
+                                <span class="fw-500" style="cursor: pointer;">{{ category.name }}</span>
+                                <span class="badge badge-enterprise" style="background-color: {{ category.color }}; cursor: pointer;">0</span>
                             </div>
                         </a>
                         {% endfor %}
