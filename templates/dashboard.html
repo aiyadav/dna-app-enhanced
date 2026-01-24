@@ -672,10 +672,15 @@
         
         console.log('Article HTML inserted into DOM');
         
-        // Update counters immediately after DOM insertion
+        // Update counters AND category stats immediately after DOM insertion
         requestAnimationFrame(() => {
             console.log('Updating counters via requestAnimationFrame');
             updateLiveCounters();
+            // Force category update separately to ensure it runs
+            setTimeout(() => {
+                console.log('Force updating category stats after 100ms');
+                updateCategoryStats();
+            }, 100);
         });
     }
     
@@ -739,8 +744,7 @@
             console.log('Updated resultCount:', resultCountEl.textContent);
         }
         
-        // Update category distribution and list
-        updateCategoryStats();
+        console.log('updateLiveCounters completed, will call updateCategoryStats next');
     }
     
     function updateCategoryStats() {
