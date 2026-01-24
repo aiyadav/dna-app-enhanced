@@ -452,7 +452,10 @@
 {% endif %}
 
 <script>
-    // Cache buster: {{ range(1, 999999999) | random }}
+    // VERSION: {{ range(1, 999999999) | random }} - If this number doesn't change on refresh, your browser is caching
+    console.log('=== DASHBOARD SCRIPT VERSION: {{ range(1, 999999999) | random }} ===');
+    console.log('If you see the same version number after refresh, clear your browser cache!');
+    
     // Progress monitoring with live article updates
     let progressCheckCount = 0;
     const MAX_PROGRESS_CHECKS = 3600; // 30 minutes at 500ms intervals
