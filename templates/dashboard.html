@@ -552,6 +552,7 @@
             // Initialize category chart
             if (!window.categoryChart) {
                 const ctx = document.getElementById('categoryChart');
+                console.log('Initializing category chart, canvas element:', ctx);
                 if (ctx) {
                     window.categoryChart = new Chart(ctx, {
                         type: 'doughnut',
@@ -578,7 +579,10 @@
                             }
                         }
                     });
-                    console.log('Category chart initialized');
+                    console.log('✓ Category chart initialized successfully');
+                    console.log('Chart object:', window.categoryChart);
+                } else {
+                    console.error('Canvas element not found!');
                 }
             }
         }
@@ -741,6 +745,7 @@
     
     function updateCategoryStats() {
         console.log('=== updateCategoryStats called ===');
+        console.log('window.categoryChart exists:', !!window.categoryChart);
         
         // Safety check: ensure chart exists
         if (!window.categoryChart) {
@@ -752,7 +757,11 @@
             const categoryCount = {};
             const categoryColorMap = {};
             
-            document.querySelectorAll('.article-card').forEach(article => {
+            // Count articles by category
+            const articles = document.querySelectorAll('.article-card');
+            console.log('Total articles found for category counting:', articles.length);
+            
+            articles.forEach(article => {
                 const categoryBadge = article.querySelector('.badge-enterprise[style*="background-color"]');
                 if (categoryBadge) {
                     const categoryName = categoryBadge.textContent.trim();
@@ -761,18 +770,25 @@
                     
                     categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1;
                     categoryColorMap[categoryName] = color;
+                    console.log(`Found category: ${categoryName}, count: ${categoryCount[categoryName]}, color: ${color}`);
                 }
             });
             
-            console.log('Category counts:', categoryCount);
+            console.log('Final category counts:', categoryCount);
+            console.log('Final category colors:', categoryColorMap);
             
             // Update category list badges
-            document.querySelectorAll('.category-list-item').forEach(item => {
+            const categoryListItems = document.querySelectorAll('.category-list-item');
+            console.log('Category list items found:', categoryListItems.length);
+            
+            categoryListItems.forEach(item => {
                 const nameEl = item.querySelector('.fw-500');
                 const badge = item.querySelector('.badge-enterprise');
                 if (nameEl && badge) {
                     const categoryName = nameEl.textContent.trim();
-                    badge.textContent = categoryCount[categoryName] || 0;
+                    const count = categoryCount[categoryName] || 0;
+                    badge.textContent = count;
+                    console.log(`Updated badge for ${categoryName}: ${count}`);
                 }
             });
             
@@ -782,14 +798,21 @@
                 const data = Object.values(categoryCount);
                 const colors = labels.map(cat => categoryColorMap[cat] || '#6c757d');
                 
+                console.log('Updating chart with labels:', labels);
+                console.log('Updating chart with data:', data);
+                console.log('Updating chart with colors:', colors);
+                
                 window.categoryChart.data.labels = labels;
                 window.categoryChart.data.datasets[0].data = data;
                 window.categoryChart.data.datasets[0].backgroundColor = colors;
-                window.categoryChart.update();
-                console.log('Updated category chart successfully');
+                window.categoryChart.update('none'); // Update without animation for faster response
+                console.log('✓ Category chart updated successfully');
+            } else {
+                console.log('Chart or chart.data is null');
             }
         } catch (error) {
             console.error('Error in updateCategoryStats:', error);
+            console.error('Error stack:', error.stack);
         }
     }
     
