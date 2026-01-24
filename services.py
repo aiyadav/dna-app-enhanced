@@ -456,15 +456,19 @@ class NewsProcessor:
                             except:
                                 pass
                         
+                        # Always increment processed count for progress bar
+                        self.progress['processed'] += 1
+                        self.progress['current_article'] = entry_title[:60]
+                        
                         if published_date < cutoff_time:
+                            print(f"Skipping: {entry_title[:60]} (older than 24 hours)")
                             continue
                         
                         if not entry_link or entry_link in processed_urls:
+                            print(f"Skipping: {entry_title[:60]} (duplicate or no link)")
                             continue
                         
                         processed_urls.add(entry_link)
-                        self.progress['processed'] += 1
-                        self.progress['current_article'] = entry_title[:60]
                         print(f"Processing: {entry_title[:60]}...")
                         
                         existing = db.query(Article).filter(Article.url == entry_link).first()
