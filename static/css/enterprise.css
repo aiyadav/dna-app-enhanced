@@ -525,13 +525,18 @@ body {
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     box-shadow: var(--shadow-sm);
     border-left: 4px solid transparent;
-    cursor: pointer;
+    cursor: pointer !important;
 }
 
 .category-list-item:hover {
     transform: translateX(6px);
     box-shadow: var(--shadow-md);
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    cursor: pointer !important;
+}
+
+.category-list-item * {
+    cursor: pointer !important;
 }
 
 /* Improved Page Header */
