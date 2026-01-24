@@ -805,8 +805,13 @@
             if (nameEl && badge) {
                 const categoryName = nameEl.textContent.trim();
                 const count = categoryCount[categoryName] || 0;
+                const oldValue = badge.textContent;
                 badge.textContent = count;
-                console.log(`  Updated badge ${index + 1}: ${categoryName} = ${count}`);
+                // Force visual update
+                badge.style.display = 'none';
+                badge.offsetHeight; // Force reflow
+                badge.style.display = '';
+                console.log(`  Updated badge ${index + 1}: ${categoryName} = ${count} (was: ${oldValue})`);
             }
         });
         
