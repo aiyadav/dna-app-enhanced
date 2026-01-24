@@ -734,9 +734,20 @@
             resultCountEl.textContent = `${totalArticles} article${totalArticles !== 1 ? 's' : ''}`;
             console.log('Updated resultCount:', resultCountEl.textContent);
         }
+        
+        // Update category distribution and list
+        updateCategoryStats();
     }
     
     function updateCategoryStats() {
+        console.log('=== updateCategoryStats called ===');
+        
+        // Safety check: ensure chart exists
+        if (!window.categoryChart) {
+            console.log('Category chart not initialized yet, skipping update');
+            return;
+        }
+        
         try {
             const categoryCount = {};
             const categoryColorMap = {};
@@ -755,6 +766,7 @@
             
             console.log('Category counts:', categoryCount);
             
+            // Update category list badges
             document.querySelectorAll('.category-list-item').forEach(item => {
                 const nameEl = item.querySelector('.fw-500');
                 const badge = item.querySelector('.badge-enterprise');
@@ -764,6 +776,7 @@
                 }
             });
             
+            // Update chart with safety check
             if (window.categoryChart && window.categoryChart.data) {
                 const labels = Object.keys(categoryCount);
                 const data = Object.values(categoryCount);
@@ -773,7 +786,7 @@
                 window.categoryChart.data.datasets[0].data = data;
                 window.categoryChart.data.datasets[0].backgroundColor = colors;
                 window.categoryChart.update();
-                console.log('Updated category chart');
+                console.log('Updated category chart successfully');
             }
         } catch (error) {
             console.error('Error in updateCategoryStats:', error);
