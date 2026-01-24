@@ -815,6 +815,8 @@
                 } else {
                     item.style.display = '';
                     item.style.cursor = 'pointer';
+                    // Force cursor on all children
+                    item.querySelectorAll('*').forEach(child => child.style.cursor = 'pointer');
                     badge.style.display = 'none';
                     badge.offsetHeight;
                     badge.style.display = '';
