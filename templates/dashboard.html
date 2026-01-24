@@ -1050,19 +1050,17 @@
     }
 
 
-    // Smooth scroll to category sections
-    document.querySelectorAll('a[href^="#category-"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
+    // Smooth scroll using event delegation
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('a[href^="#category-"]')) {
             e.preventDefault();
-            const targetId = this.getAttribute('href').substring(1);
+            const anchor = e.target.closest('a[href^="#category-"]');
+            const targetId = anchor.getAttribute('href').substring(1);
             const target = document.getElementById(targetId);
             if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-        });
+        }
     });
 
     // Edit Summary Modal Logic
