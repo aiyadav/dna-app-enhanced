@@ -551,10 +551,10 @@
             console.log('Showed articles container');
         }
         
-        // ALWAYS ensure category chart is initialized before updating
+        // CRITICAL: Initialize chart IMMEDIATELY when first article arrives
         if (!window.categoryChart) {
+            console.log('*** CHART DOES NOT EXIST - INITIALIZING NOW ***');
             const ctx = document.getElementById('categoryChart');
-            console.log('*** INITIALIZING CHART ***');
             console.log('Canvas element:', ctx);
             console.log('Chart.js available:', typeof Chart !== 'undefined');
             
@@ -585,16 +585,15 @@
                             }
                         }
                     });
-                    console.log('✓✓✓ CHART INITIALIZED SUCCESSFULLY ✓✓✓');
-                    console.log('Chart object:', window.categoryChart);
+                    console.log('✓✓✓ CHART INITIALIZED IN addArticleToPage ✓✓✓');
                 } catch (error) {
-                    console.error('!!! CHART INITIALIZATION FAILED !!!', error);
+                    console.error('!!! CHART INIT ERROR !!!', error);
                 }
             } else {
-                console.error('!!! Canvas element not found or Chart.js not loaded !!!');
+                console.error('!!! Canvas or Chart.js not available !!!');
             }
         } else {
-            console.log('Chart already exists:', window.categoryChart);
+            console.log('Chart already exists');
         }
         
         // Find articles list container
