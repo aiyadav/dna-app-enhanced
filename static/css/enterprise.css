@@ -213,21 +213,6 @@ body {
     z-index: 1;
 }
 
-.category-list-item {
-    border: none;
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-    padding: 0.75rem 1rem;
-    transition: all 0.2s ease;
-    background: white;
-    box-shadow: var(--shadow-sm);
-}
-
-.category-list-item:hover {
-    transform: translateX(4px);
-    box-shadow: var(--shadow-md);
-}
-
 .btn-enterprise {
     border-radius: 8px;
     padding: 0.625rem 1.25rem;
