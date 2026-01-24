@@ -813,10 +813,12 @@
                     item.style.display = 'none';
                     console.log(`  Hidden badge ${index + 1}: ${categoryName} (count = 0)`);
                 } else {
-                    item.style.display = '';
+                    item.style.display = 'block';
+                    item.offsetHeight; // Force reflow
                     item.style.cursor = 'pointer';
-                    // Force cursor on all children
-                    item.querySelectorAll('*').forEach(child => child.style.cursor = 'pointer');
+                    item.querySelectorAll('*').forEach(child => {
+                        child.style.cursor = 'pointer';
+                    });
                     badge.style.display = 'none';
                     badge.offsetHeight;
                     badge.style.display = '';
