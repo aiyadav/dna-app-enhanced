@@ -804,21 +804,27 @@
         
         // Update chart if it exists
         console.log('Checking chart:', !!window.categoryChart);
-        if (window.categoryChart && window.categoryChart.data) {
-            const labels = Object.keys(categoryCount);
-            const data = Object.values(categoryCount);
-            const colors = labels.map(cat => categoryColorMap[cat] || '#6c757d');
-            
-            console.log('Updating chart with:');
-            console.log('  Labels:', labels);
-            console.log('  Data:', data);
-            console.log('  Colors:', colors);
-            
-            window.categoryChart.data.labels = labels;
-            window.categoryChart.data.datasets[0].data = data;
-            window.categoryChart.data.datasets[0].backgroundColor = colors;
-            window.categoryChart.update('none');
-            console.log('✓✓✓ CHART UPDATED SUCCESSFULLY ✓✓✓');
+        if (window.categoryChart) {
+            console.log('Chart exists, checking data property:', !!window.categoryChart.data);
+            if (window.categoryChart.data) {
+                const labels = Object.keys(categoryCount);
+                const data = Object.values(categoryCount);
+                const colors = labels.map(cat => categoryColorMap[cat] || '#6c757d');
+                
+                console.log('Updating chart with:');
+                console.log('  Labels:', labels);
+                console.log('  Data:', data);
+                console.log('  Colors:', colors);
+                
+                window.categoryChart.data.labels = labels;
+                window.categoryChart.data.datasets[0].data = data;
+                window.categoryChart.data.datasets[0].backgroundColor = colors;
+                window.categoryChart.update('none');
+                console.log('✓✓✓ CHART UPDATED SUCCESSFULLY ✓✓✓');
+            } else {
+                console.error('!!! CHART EXISTS BUT NO DATA PROPERTY !!!');
+                console.error('Chart object:', window.categoryChart);
+            }
         } else {
             console.error('!!! CHART NOT AVAILABLE FOR UPDATE !!!');
         }
