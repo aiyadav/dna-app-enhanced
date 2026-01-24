@@ -156,6 +156,53 @@
     </div>
 </div>
 
+<!-- Article Processing Settings Card -->
+<div class="modern-card animate-in">
+    <div class="modern-card-header">
+        <h2 class="modern-card-title">
+            <i class="bi bi-funnel-fill"></i>
+            Article Processing Settings
+        </h2>
+    </div>
+    <div class="modern-card-body">
+        <form method="POST" action="{{ url_for('update_processing_settings') }}">
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label-modern">
+                        <i class="bi bi-speedometer2"></i> Minimum Relevancy Score Threshold
+                    </label>
+                    <div class="d-flex align-items-center gap-3">
+                        <input type="number" 
+                               class="form-control-modern" 
+                               name="relevancy_threshold" 
+                               id="relevancy_threshold"
+                               value="{{ config.get('relevancy_threshold', '60') }}"
+                               min="0" 
+                               max="100" 
+                               step="1" 
+                               required
+                               style="max-width: 120px;">
+                        
+                        <span class="badge bg-success" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            <i class="bi bi-check-circle-fill"></i> Currently: {{ config.get('relevancy_threshold', '60') }}
+                        </span>
+                    </div>
+                    <small class="form-text text-muted">
+                        Articles with relevancy score below this threshold will be filtered out during news refresh (0-100)
+                    </small>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn-modern btn-modern-primary">
+                    <i class="bi bi-check-circle-fill"></i> Save Threshold
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function toggleAuthMethod() {
     const provider = document.getElementById('llm_provider').value;

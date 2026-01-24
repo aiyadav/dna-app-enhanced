@@ -386,6 +386,12 @@ class NewsProcessor:
             categories = db.query(Category).filter(Category.active == True).all()
             topics = db.query(Topic).filter(Topic.active == True).all()
             
+            # Get relevancy threshold from database
+            from database import SystemConfig
+            threshold_config = db.query(SystemConfig).filter(SystemConfig.key == 'relevancy_threshold').first()
+            min_relevancy_score = int(threshold_config.value) if threshold_config else 60
+            print(f"Using relevancy threshold: {min_relevancy_score}")
+            
             if not categories:
                 return "No active categories found"
             
@@ -506,8 +512,8 @@ class NewsProcessor:
                             print(f"  -> Extracted author via AI: {entry_author}")
 
                         # Filter articles with low relevancy score
-                        if relevancy_score < 60:
-                            print(f"  -> Skipping: Low relevancy score ({relevancy_score} < 60)")
+                        if relevancy_score < min_relevancy_score:
+                            print(f"  -> Skipping: Low relevancy score ({relevancy_score} < {min_relevancy_score})")
                             continue
                         
                         # Case-insensitive category matching with strict validation

@@ -241,6 +241,35 @@ def update_llm_config():
         db.close()
     return redirect(url_for('admin_llm'))
 
+@app.route('/update_processing_settings', methods=['POST'])
+def update_processing_settings():
+    db = SessionLocal()
+    try:
+        threshold = request.form.get('relevancy_threshold', '60')
+        
+        # Validate threshold is a number between 0 and 100
+        try:
+            threshold_int = int(threshold)
+            if threshold_int < 0 or threshold_int > 100:
+                flash('Relevancy threshold must be between 0 and 100', 'error')
+                return redirect(url_for('admin_llm'))
+        except ValueError:
+            flash('Invalid relevancy threshold value', 'error')
+            return redirect(url_for('admin_llm'))
+        
+        # Update threshold
+        config_item = db.query(SystemConfig).filter(SystemConfig.key == 'relevancy_threshold').first()
+        if config_item:
+            config_item.value = threshold
+        else:
+            db.add(SystemConfig(key='relevancy_threshold', value=threshold))
+        
+        db.commit()
+        flash(f'Relevancy threshold updated to {threshold}. Run "Refresh News" to apply the new filter.')
+    finally:
+        db.close()
+    return redirect(url_for('admin_llm'))
+
 @app.route('/test_bedrock_connection', methods=['POST'])
 def test_bedrock_connection():
     import boto3
