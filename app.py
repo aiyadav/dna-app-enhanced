@@ -542,11 +542,15 @@ def delete_category(category_id):
 
 @app.route('/admin/scheduler')
 def admin_scheduler():
+    # Force fresh data by getting next run time directly
+    import time
     next_run = rss_scheduler.get_next_run_time()
+    print(f"[{time.time()}] Scheduler page loaded - Next run: {next_run}")
     return render_template('admin_scheduler.html', 
                          next_run=next_run, 
                          is_running=rss_scheduler.is_running,
-                         active_tab='scheduler')
+                         active_tab='scheduler',
+                         timestamp=time.time())
 
 @app.route('/update_schedule', methods=['POST'])
 def update_schedule():
