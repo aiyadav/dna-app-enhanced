@@ -163,11 +163,33 @@ class AIService:
         
         # Build relevancy criteria from topics if provided
         relevancy_section = ""
+        logger.info("="*80)
+        logger.info("KEYWORD & RELEVANCE ANALYSIS LOG")
+        logger.info("="*80)
+        logger.info(f"Article Title: {title}")
+        logger.info(f"Article URL: {url}")
+        logger.info(f"Content Length: {len(content)} characters (using first 2500 for analysis)")
+        logger.info(f"Available Categories: {categories_list}")
+        
         if topics:
+            logger.info(f"\nActive Topics Count: {len(topics)}")
+            logger.info("\nKEYWORDS BEING USED FOR RELEVANCE:")
+            for topic in topics:
+                logger.info(f"  Topic: '{topic.name}'")
+                logger.info(f"    Keywords: {topic.keywords}")
+            
             relevancy_section = "\n\nRELEVANCY CRITERIA:\nThe article should be related to these topics and keywords:\n"
             for topic in topics:
                 relevancy_section += f"- {topic.name}: {topic.keywords}\n"
             relevancy_section += "\nScore the relevancy (0-100) based on how well the article relates to these topics. Score 75+ if clearly relevant, 50-74 if somewhat related, below 50 if not related."
+        else:
+            logger.info("\nNo topics configured - relevance will be based on categories only")
+        
+        logger.info("\nRELEVANCE CALCULATION METHOD:")
+        logger.info("  - Type: AI-driven contextual analysis (NOT simple keyword matching)")
+        logger.info("  - Model: AWS Bedrock Claude 3 Haiku")
+        logger.info("  - Process: AI performs semantic analysis of article content against topic keywords")
+        logger.info("  - Scoring: AI assigns 0-100 score based on contextual relevance")
         
         prompt = f"""Analyze this article and create an executive briefing.
 
@@ -195,12 +217,19 @@ Return JSON with:
 Return ONLY this JSON format:
 {{"bullets": ["Bullet 1", "Bullet 2", ...], "category": "category_name", "relevancy_score": 85, "author": "Author Name"}}"""
         
+        logger.info("\nPROMPT CONTEXT SENT TO AI:")
+        logger.info(f"  Prompt length: {len(prompt)} characters")
+        logger.info(f"  Article content included: {min(len(content), 2500)} characters")
+        logger.info(f"  Topics/Keywords included: {'Yes' if topics else 'No'}")
+        
         try:
             payload = {
                 "max_tokens": 1200,
                 "anthropic_version": "bedrock-2023-05-31",
                 "messages": [{"role": "user", "content": prompt}]
             }
+            
+            logger.info("\nSending request to AWS Bedrock...")
             response = self.bedrock_client.invoke_model(
                 modelId=self.model_id,
                 contentType='application/json',
@@ -209,7 +238,9 @@ Return ONLY this JSON format:
             )
             response_body = json.loads(response['body'].read())
             response_text = response_body['content'][0]['text']
-            logger.info(f"AI raw response: {response_text}")
+            
+            logger.info("\nAI RESPONSE RECEIVED:")
+            logger.info(f"  Raw response: {response_text}")
             
             # Extract JSON from response (handle cases where AI adds explanatory text)
             json_str = response_text.strip()
@@ -258,6 +289,17 @@ Return ONLY this JSON format:
                     full_summary = "\n".join([f"• {b}" for b in cleaned_bullets])
                 else:
                     full_summary = str(bullets)
+
+                logger.info("\nRELEVANCE CALCULATION RESULTS:")
+                logger.info(f"  Assigned Category: '{result.get('category', '')}'")
+                logger.info(f"  Relevancy Score: {result.get('relevancy_score', 0)}/100")
+                logger.info(f"  Extracted Author: '{result.get('author', '')}'")
+                logger.info(f"  Summary Bullets: {len(cleaned_bullets)} items")
+                logger.info("\nSCORING CONTEXT:")
+                logger.info("  - Score is AI-determined based on semantic understanding")
+                logger.info("  - AI considers: topic keywords, article content, context, and meaning")
+                logger.info("  - NOT based on simple keyword frequency or exact matching")
+                logger.info("="*80)
 
                 return {
                     "summary": full_summary,
@@ -489,6 +531,10 @@ class NewsProcessor:
                         print(f"  -> Analyzing with AI...")
                         print(f"  -> Available categories: {[c.name for c in categories]}")
                         print(f"  -> Using topics: {[t.name for t in topics]}")
+                        if topics:
+                            print(f"  -> Keywords for relevance:")
+                            for t in topics:
+                                print(f"       {t.name}: {t.keywords}")
                         time.sleep(2)  # Increased from 1 to 2 seconds to avoid any throttling
                         analysis = self.ai_service.analyze_article(entry_title, entry_author, content, entry_link, categories, topics)
                         

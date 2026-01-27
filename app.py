@@ -550,8 +550,8 @@ def admin_scheduler():
 
 @app.route('/update_schedule', methods=['POST'])
 def update_schedule():
-    hour = int(request.form['hour'])
-    minute = int(request.form['minute'])
+    time_str = request.form.get('time', '09:00')
+    hour, minute = map(int, time_str.split(':'))
     
     rss_scheduler.schedule_daily(hour=hour, minute=minute)
     flash(f'Schedule updated to {hour:02d}:{minute:02d} daily')
