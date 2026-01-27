@@ -546,10 +546,17 @@ def admin_scheduler():
     import time
     next_run = rss_scheduler.get_next_run_time()
     print(f"[{time.time()}] Scheduler page loaded - Next run: {next_run}")
+    
+    # Extract current schedule time from next_run
+    current_time = "09:00"
+    if next_run:
+        current_time = f"{next_run.hour:02d}:{next_run.minute:02d}"
+    
     return render_template('admin_scheduler.html', 
                          next_run=next_run, 
                          is_running=rss_scheduler.is_running,
                          active_tab='scheduler',
+                         current_time=current_time,
                          timestamp=time.time())
 
 @app.route('/update_schedule', methods=['POST'])
