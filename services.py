@@ -207,12 +207,13 @@ IMPORTANT RULES:
 2. The "category" field MUST be EXACTLY one of these values: {categories_text}
 3. Do NOT create new category names or use variations
 4. If the article doesn't match any category well, use an empty string ""
+5. For "author" field: Extract the author name from the content if the provided Author is empty/unknown. Look for bylines like "By [Name]", "Written by [Name]", author attributions, or reporter names. If no author can be found, return empty string ""
 
 Return JSON with:
 - "bullets": list of summary bullets (empty array if not relevant)
 - "category": MUST be exactly one of [{categories_text}] or empty string
 - "relevancy_score": integer (0-100) representing how relevant the article is to the topics and categories
-- "author": extracted author name (use provided Author if valid, otherwise try to extract from Content)
+- "author": extracted author name from content (if Author field is empty/unknown), or empty string "" if no author found
 
 Return ONLY this JSON format:
 {{"bullets": ["Bullet 1", "Bullet 2", ...], "category": "category_name", "relevancy_score": 85, "author": "Author Name"}}"""
@@ -553,15 +554,25 @@ class NewsProcessor:
                         print(f"     - Author: '{ai_author}'")
                         
                         # Use AI extracted author if original was missing/unknown and AI found one
-                        final_author = entry_author
-                        if (not entry_author or entry_author.strip() == '' or entry_author.lower() in ['unknown', 'none']) and ai_author and ai_author.strip() and ai_author.lower() not in ['unknown', 'none', '']:
-                            final_author = ai_author
-                            print(f"  -> Using AI-extracted author: {final_author}")
-                        elif not final_author or final_author.strip() == '':
-                            final_author = "Unknown"
-                            print(f"  -> No author found, using: Unknown")
-                        else:
+                        final_author = entry_author.strip() if entry_author else ""
+                        ai_author_clean = ai_author.strip() if ai_author else ""
+                        
+                        # Check if RSS author is valid
+                        rss_author_valid = final_author and final_author.lower() not in ['unknown', 'none', 'n/a', '']
+                        # Check if AI author is valid
+                        ai_author_valid = ai_author_clean and ai_author_clean.lower() not in ['unknown', 'none', 'n/a', '', 'not available', 'not specified']
+                        
+                        if rss_author_valid:
+                            # RSS has valid author, use it
                             print(f"  -> Using RSS feed author: {final_author}")
+                        elif ai_author_valid:
+                            # RSS has no valid author, but AI found one
+                            final_author = ai_author_clean
+                            print(f"  -> Using AI-extracted author: {final_author}")
+                        else:
+                            # Neither RSS nor AI has valid author
+                            final_author = "Unknown"
+                            print(f"  -> No valid author found (RSS: '{entry_author}', AI: '{ai_author}'), using: Unknown")
 
                         # Filter articles with low relevancy score
                         if relevancy_score < min_relevancy_score:
