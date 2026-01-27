@@ -553,8 +553,14 @@ def update_schedule():
     time_str = request.form.get('time', '09:00')
     hour, minute = map(int, time_str.split(':'))
     
+    print(f"Updating schedule to {hour:02d}:{minute:02d}")
     rss_scheduler.schedule_cron(minute=str(minute), hour=str(hour))
-    flash(f'Schedule updated to {hour:02d}:{minute:02d} daily')
+    
+    # Get the updated next run time
+    next_run = rss_scheduler.get_next_run_time()
+    print(f"Next run time after update: {next_run}")
+    
+    flash(f'Schedule updated to {hour:02d}:{minute:02d} daily. Next run: {next_run.strftime("%b %d, %H:%M") if next_run else "Not scheduled"}')
     return redirect(url_for('admin_scheduler'))
 
 @app.route('/run_scheduler_now')
