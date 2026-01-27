@@ -283,8 +283,8 @@ def test_bedrock_connection():
         if not region or len(region) > 20:
             region = 'us-east-1'
         
-        # Determine if we should use profile or instance role
-        on_ec2_now = is_running_on_ec2()
+        # Use the cached on_ec2 value instead of calling is_running_on_ec2() again
+        on_ec2_now = on_ec2
         
         if on_ec2_now:
             # On EC2: Use instance role (no profile) - ensure AWS_PROFILE is not set
@@ -324,7 +324,7 @@ def test_bedrock_connection():
         response_body = json.loads(response['body'].read())
         response_text = response_body['content'][0]['text']
         
-        env_info = "EC2 Instance Role" if on_ec2 else f"Profile: {os.environ.get('AWS_PROFILE', 'Default credentials')}"
+        env_info = "EC2 Instance Role" if on_ec2_now else f"Profile: {os.environ.get('AWS_PROFILE', 'Default credentials')}"
         return jsonify({
             "success": True,
             "message": f"Connected successfully!\nModel: {model_id}\nIdentity: {identity['Arn']}\nResponse: {response_text[:100]}"
@@ -332,7 +332,7 @@ def test_bedrock_connection():
     except Exception as e:
         error_msg = str(e)
         print(f"Bedrock connection error: {error_msg}")
-        env_info = "EC2 Instance Role" if 'on_ec2' in locals() and on_ec2 else f"Profile: {os.environ.get('AWS_PROFILE', 'Not set')}"
+        env_info = "EC2 Instance Role" if on_ec2 else f"Profile: {os.environ.get('AWS_PROFILE', 'Not set')}"
         return jsonify({
             "success": False,
             "message": f"Connection failed: {error_msg}\n\n{env_info}\nRegion: {os.environ.get('AWS_DEFAULT_REGION', 'Not set')}"
