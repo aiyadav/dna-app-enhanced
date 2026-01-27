@@ -553,7 +553,7 @@ def update_schedule():
     time_str = request.form.get('time', '09:00')
     hour, minute = map(int, time_str.split(':'))
     
-    rss_scheduler.schedule_daily(hour=hour, minute=minute)
+    rss_scheduler.schedule_cron(minute=str(minute), hour=str(hour))
     flash(f'Schedule updated to {hour:02d}:{minute:02d} daily')
     return redirect(url_for('admin_scheduler'))
 
