@@ -553,9 +553,15 @@ class NewsProcessor:
                         print(f"     - Author: '{ai_author}'")
                         
                         # Use AI extracted author if original was missing/unknown and AI found one
-                        if (not entry_author or entry_author.lower() in ['unknown', '']) and ai_author and ai_author.lower() != "unknown":
-                            entry_author = ai_author
-                            print(f"  -> Extracted author via AI: {entry_author}")
+                        final_author = entry_author
+                        if (not entry_author or entry_author.strip() == '' or entry_author.lower() in ['unknown', 'none']) and ai_author and ai_author.strip() and ai_author.lower() not in ['unknown', 'none', '']:
+                            final_author = ai_author
+                            print(f"  -> Using AI-extracted author: {final_author}")
+                        elif not final_author or final_author.strip() == '':
+                            final_author = "Unknown"
+                            print(f"  -> No author found, using: Unknown")
+                        else:
+                            print(f"  -> Using RSS feed author: {final_author}")
 
                         # Filter articles with low relevancy score
                         if relevancy_score < min_relevancy_score:
@@ -584,7 +590,7 @@ class NewsProcessor:
                             url=entry_link,
                             content=content,
                             summary=analysis.get("summary", ""),
-                            author=entry_author,
+                            author=final_author,
                             feed_id=feed.id,
                             published_date=published_date,
                             category_name=final_category_name,
