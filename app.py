@@ -468,7 +468,7 @@ def processing_status():
 @app.route('/stop_processing')
 def stop_processing():
     if news_processor.stop_processing():
-        return jsonify({"status": "success", "message": "Stop request sent. Processing will halt after current article."})
+        return jsonify({"status": "success", "message": "Stop request sent. Processing will stop immediately."})
     else:
         return jsonify({"status": "error", "message": "No processing is currently running"}), 400
 

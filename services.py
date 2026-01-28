@@ -144,12 +144,18 @@ class AIService:
             
             region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
             
+            from botocore.config import Config
+            boto_config = Config(
+                read_timeout=5,
+                connect_timeout=5
+            )
+            
             if profile_name:
                 session = boto3.Session(profile_name=profile_name)
             else:
                 session = boto3.Session()
             
-            self.bedrock_client = session.client('bedrock-runtime', region_name=region_name)
+            self.bedrock_client = session.client('bedrock-runtime', region_name=region_name, config=boto_config)
             self.aws_available = True
             logger.info(f"AIService: AWS Bedrock initialized successfully - model: {self.model_id}, region: {region_name}")
         except Exception as e:
