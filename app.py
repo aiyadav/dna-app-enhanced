@@ -591,11 +591,22 @@ def run_scheduler_now():
     print("=== Run Now button clicked ===")
     app.logger.info("Run Now button clicked")
     
-    if not news_processor.processing:
-        print("=== Starting RSS processing ===")
+    # Check LLM connectivity before starting
+    connected, message = news_processor.check_llm_connectivity()
+    if not connected:
+        flash(f'Cannot start: {message}')
+        return redirect(url_for('admin_scheduler'))
+    
+    def background_refresh():
         result = news_processor.process_feeds()
         print(f"=== RSS processing result: {result} ===")
-        flash(f'RSS summary completed: {result}')
+    
+    if not news_processor.processing:
+        print("=== Starting RSS processing in background ===")
+        thread = threading.Thread(target=background_refresh)
+        thread.daemon = True
+        thread.start()
+        flash('RSS summary started in background')
     else:
         print("=== RSS processing already in progress ===")
         flash('RSS summary already in progress')
