@@ -433,6 +433,7 @@ class NewsProcessor:
         """Request to stop the current processing"""
         if self.processing:
             self.stop_requested = True
+            self.processing = False
             logger.info("Stop processing requested by user")
             return True
         return False
