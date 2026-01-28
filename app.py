@@ -272,6 +272,7 @@ def update_processing_settings():
 
 @app.route('/test_bedrock_connection', methods=['POST'])
 def test_bedrock_connection():
+    """Test Bedrock connection with EC2 instance role"""
     import boto3
     import json
     from botocore.config import Config
@@ -280,71 +281,65 @@ def test_bedrock_connection():
         data = request.json or {}
         model_id = data.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
         
-        region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1').strip()
-        if not region or len(region) > 20:
-            region = 'us-east-1'
+        print(f"[TEST] Starting Bedrock connection test for model: {model_id}")
+        print(f"[TEST] Running on EC2: {on_ec2}")
+        print(f"[TEST] AWS_PROFILE: {os.environ.get('AWS_PROFILE', 'Not set')}")
+        print(f"[TEST] AWS_DEFAULT_REGION: {os.environ.get('AWS_DEFAULT_REGION', 'Not set')}")
         
-        # Configure with short timeouts to prevent hanging
+        # Configure with timeouts
         boto_config = Config(
             connect_timeout=5,
             read_timeout=8,
             retries={'max_attempts': 1}
         )
         
-        # Use the cached on_ec2 value instead of calling is_running_on_ec2() again
-        on_ec2_now = on_ec2
+        # Create session - on EC2, boto3 automatically uses instance role
+        session = boto3.Session(region_name='us-east-1')
         
-        if on_ec2_now:
-            # On EC2: Use instance role (no profile) - ensure AWS_PROFILE is not set
-            if 'AWS_PROFILE' in os.environ:
-                del os.environ['AWS_PROFILE']
-            print(f"Testing Bedrock on EC2 - Using instance role, Region: '{region}'")
-            session = boto3.Session()
-        else:
-            # Local: Use profile from YAML config
-            profile_name = iam_config.get('iam_role_name', '').strip()
-            print(f"Testing Bedrock locally - Profile: '{profile_name}', Region: '{region}'")
-            if profile_name:
-                session = boto3.Session(profile_name=profile_name)
-            else:
-                session = boto3.Session()
-        
-        # Quick identity check with timeout
-        sts = session.client('sts', region_name=region, config=boto_config)
+        # Test credentials
+        print("[TEST] Getting caller identity...")
+        sts = session.client('sts', config=boto_config)
         identity = sts.get_caller_identity()
         identity_arn = identity['Arn']
-        print(f"AWS Identity: {identity_arn}")
+        print(f"[TEST] Identity: {identity_arn}")
         
-        # Test Bedrock with timeout
-        bedrock_client = session.client('bedrock-runtime', region_name=region, config=boto_config)
+        # Test Bedrock
+        print("[TEST] Creating Bedrock client...")
+        bedrock = session.client('bedrock-runtime', config=boto_config)
         
+        print("[TEST] Invoking model...")
         payload = {
             "max_tokens": 50,
             "anthropic_version": "bedrock-2023-05-31",
-            "messages": [{"role": "user", "content": "Reply with: OK"}]
+            "messages": [{"role": "user", "content": "Say: Connection OK"}]
         }
         
-        response = bedrock_client.invoke_model(
+        response = bedrock.invoke_model(
             modelId=model_id,
             contentType='application/json',
             accept='application/json',
-            body=json.dumps(payload).encode('utf-8')
+            body=json.dumps(payload)
         )
         
         response_body = json.loads(response['body'].read())
         response_text = response_body['content'][0]['text']
+        print(f"[TEST] Success! Response: {response_text}")
         
         return jsonify({
             "success": True,
-            "message": f"✓ Connected successfully!\n\nModel: {model_id}\nIdentity: {identity_arn}\nResponse: {response_text[:100]}"
+            "message": f"✓ Connection Successful!\n\nModel: {model_id}\nIdentity: {identity_arn}\nResponse: {response_text}"
         })
+        
     except Exception as e:
+        import traceback
         error_msg = str(e)
-        print(f"Bedrock connection error: {error_msg}")
-        env_info = "EC2 Instance Role" if on_ec2 else f"Profile: {os.environ.get('AWS_PROFILE', 'Not set')}"
+        error_trace = traceback.format_exc()
+        print(f"[TEST] ERROR: {error_msg}")
+        print(f"[TEST] Traceback:\n{error_trace}")
+        
         return jsonify({
             "success": False,
-            "message": f"✗ Connection failed: {error_msg}\n\nEnvironment: {env_info}\nRegion: {os.environ.get('AWS_DEFAULT_REGION', 'Not set')}"
+            "message": f"✗ Connection Failed\n\nError: {error_msg}\nRegion: us-east-1\nEnvironment: {'EC2 Instance Role' if on_ec2 else 'Local'}"
         }), 500
 
 @app.route('/add_feed', methods=['POST'])
