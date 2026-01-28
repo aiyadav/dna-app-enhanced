@@ -332,6 +332,8 @@ class NewsProcessor:
             if not self.ai_service.aws_available:
                 return False, "AWS Bedrock is not configured or unavailable"
             
+            from botocore.config import Config
+            
             # Determine if we should use profile or instance role
             on_ec2 = is_running_on_ec2()
             profile_name = None
@@ -347,12 +349,27 @@ class NewsProcessor:
             
             region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
             
+            # Configure proxy settings
+            proxy_config = {}
+            if os.environ.get('HTTP_PROXY'):
+                proxy_config['proxies'] = {
+                    'http': os.environ.get('HTTP_PROXY'),
+                    'https': os.environ.get('HTTPS_PROXY', os.environ.get('HTTP_PROXY'))
+                }
+            
+            boto_config = Config(
+                connect_timeout=10,
+                read_timeout=15,
+                retries={'max_attempts': 2},
+                **proxy_config
+            )
+            
             if profile_name:
                 session = boto3.Session(profile_name=profile_name)
             else:
                 session = boto3.Session()
             
-            bedrock_client = session.client('bedrock-runtime', region_name=region_name)
+            bedrock_client = session.client('bedrock-runtime', region_name=region_name, config=boto_config)
             
             # Send minimal test prompt
             test_payload = {
