@@ -234,12 +234,16 @@ function toggleAuthMethod() {
 }
 
 function testConnection() {
+    console.log('Test connection clicked');
     const testBtn = document.getElementById('test_connection_btn');
     const testResult = document.getElementById('test_result');
     const provider = document.getElementById('llm_provider').value;
     const bedrockModel = document.getElementById('bedrock_model');
     const customModel = document.getElementById('custom_model');
     const apiKey = document.getElementById('llm_api_key');
+    
+    console.log('Provider:', provider);
+    console.log('Bedrock model value:', bedrockModel ? bedrockModel.value : 'null');
     
     // Validate based on provider
     if (provider === 'bedrock_iam' || provider === 'bedrock_api') {
@@ -276,6 +280,9 @@ function testConnection() {
     
     // For Bedrock, use existing endpoint
     if (provider === 'bedrock_iam' || provider === 'bedrock_api') {
+        console.log('Sending POST request to /test_bedrock_connection');
+        console.log('Model ID:', bedrockModel.value);
+        
         fetch('/test_bedrock_connection', {
             method: 'POST',
             headers: {
@@ -284,6 +291,7 @@ function testConnection() {
             body: JSON.stringify({ model_id: bedrockModel.value })
         })
         .then(response => {
+            console.log('Response received:', response.status, response.statusText);
             if (!response.ok && response.headers.get('content-type')?.includes('text/html')) {
                 throw new Error('Server returned an error page. Check server logs.');
             }
@@ -316,6 +324,7 @@ function testConnection() {
             }
         })
         .catch(error => {
+            console.error('Fetch error:', error);
             testBtn.disabled = false;
             testBtn.innerHTML = '<i class="bi bi-plug-fill"></i> Test Connection';
             testResult.innerHTML = `
