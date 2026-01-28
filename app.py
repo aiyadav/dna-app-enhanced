@@ -302,11 +302,7 @@ def test_bedrock_connection():
                 session = boto3.Session()
         
         # Get caller identity first to verify credentials
-        # Use VPC endpoint for STS to bypass proxy
-        sts_config = {}
-        if on_ec2_now:
-            sts_config['endpoint_url'] = 'https://vpce-017fdeec0e6b03537-xu080i8f.sts.us-east-1.vpce.amazonaws.com'
-        sts = session.client('sts', **sts_config)
+        sts = session.client('sts', region_name=region)
         identity = sts.get_caller_identity()
         print(f"AWS Identity: {identity['Arn']}")
         
