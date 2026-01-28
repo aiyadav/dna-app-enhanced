@@ -146,8 +146,8 @@ class AIService:
             
             from botocore.config import Config
             boto_config = Config(
-                read_timeout=5,
-                connect_timeout=5
+                read_timeout=30,
+                connect_timeout=10
             )
             
             if profile_name:
@@ -163,7 +163,7 @@ class AIService:
             self.bedrock_client = None
             self.aws_available = False
     
-    def analyze_article(self, title, author, content, url, categories, topics=None):
+    def analyze_article(self, title, author, content, url, categories, topics=None, stop_check=None):
         categories_list = [cat.name for cat in categories]
         categories_text = ", ".join(categories_list)
         
@@ -237,6 +237,12 @@ Return ONLY this JSON format:
             }
             
             logger.info("\nSending request to AWS Bedrock...")
+            
+            # Check if stop was requested before making the call
+            if stop_check and stop_check():
+                logger.info("Stop requested before Bedrock call")
+                return {"summary": "Analysis stopped", "quotes": "", "category": "", "relevancy_score": 0, "author": ""}
+            
             response = self.bedrock_client.invoke_model(
                 modelId=self.model_id,
                 contentType='application/json',
@@ -566,8 +572,8 @@ class NewsProcessor:
                             print(f"  -> Keywords for relevance:")
                             for t in topics:
                                 print(f"       {t.name}: {t.keywords}")
-                        time.sleep(2)  # Increased from 1 to 2 seconds to avoid any throttling
-                        analysis = self.ai_service.analyze_article(entry_title, entry_author, content, entry_link, categories, topics)
+                        time.sleep(2)
+                        analysis = self.ai_service.analyze_article(entry_title, entry_author, content, entry_link, categories, topics, stop_check=lambda: self.stop_requested)
                         
                         # Skip articles with failed analysis
                         if not analysis or analysis.get("summary", "") == "Analysis failed":
