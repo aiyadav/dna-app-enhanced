@@ -352,55 +352,16 @@ class NewsProcessor:
     def check_llm_connectivity(self):
         """Quick test to verify LLM is accessible before processing"""
         try:
-            if not self.ai_service.aws_available:
+            if not self.ai_service.aws_available or not self.ai_service.bedrock_client:
                 return False, "AWS Bedrock is not configured or unavailable"
             
-            from botocore.config import Config
-            
-            # Determine if we should use profile or instance role
-            on_ec2 = is_running_on_ec2()
-            profile_name = None
-            
-            if on_ec2:
-                # On EC2: Use instance role (profile_name stays None)
-                pass
-            else:
-                # Local: Try AWS_PROFILE from env, then fall back to config
-                profile_name = os.environ.get('AWS_PROFILE', '').strip() or None
-                if not profile_name:
-                    profile_name = IAM_CONFIG.get('iam_role_name', '').strip() or None
-            
-            region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
-            
-            # Configure proxy settings
-            proxy_config = {}
-            if os.environ.get('HTTP_PROXY'):
-                proxy_config['proxies'] = {
-                    'http': os.environ.get('HTTP_PROXY'),
-                    'https': os.environ.get('HTTPS_PROXY', os.environ.get('HTTP_PROXY'))
-                }
-            
-            boto_config = Config(
-                connect_timeout=10,
-                read_timeout=15,
-                retries={'max_attempts': 2},
-                **proxy_config
-            )
-            
-            if profile_name:
-                session = boto3.Session(profile_name=profile_name)
-            else:
-                session = boto3.Session()
-            
-            bedrock_client = session.client('bedrock-runtime', region_name=region_name, config=boto_config)
-            
-            # Send minimal test prompt
+            # Reuse existing client for faster check
             test_payload = {
                 "max_tokens": 5,
                 "anthropic_version": "bedrock-2023-05-31",
                 "messages": [{"role": "user", "content": "hi"}]
             }
-            response = bedrock_client.invoke_model(
+            response = self.ai_service.bedrock_client.invoke_model(
                 modelId=self.ai_service.model_id,
                 contentType='application/json',
                 accept='application/json',
