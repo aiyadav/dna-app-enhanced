@@ -145,9 +145,20 @@ class AIService:
             region_name = os.environ.get('AWS_DEFAULT_REGION', IAM_CONFIG.get('default_region', 'us-east-1')).strip()
             
             from botocore.config import Config
+            
+            # Configure proxy settings
+            proxy_config = {}
+            if os.environ.get('HTTP_PROXY'):
+                proxy_config['proxies'] = {
+                    'http': os.environ.get('HTTP_PROXY'),
+                    'https': os.environ.get('HTTPS_PROXY', os.environ.get('HTTP_PROXY'))
+                }
+            
             boto_config = Config(
                 read_timeout=30,
-                connect_timeout=10
+                connect_timeout=10,
+                retries={'max_attempts': 2},
+                **proxy_config
             )
             
             if profile_name:
