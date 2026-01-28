@@ -274,6 +274,7 @@ def update_processing_settings():
 def test_bedrock_connection():
     import boto3
     import json
+    from botocore.config import Config
     
     try:
         data = request.json or {}
@@ -282,6 +283,13 @@ def test_bedrock_connection():
         region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1').strip()
         if not region or len(region) > 20:
             region = 'us-east-1'
+        
+        # Configure with short timeouts to prevent hanging
+        boto_config = Config(
+            connect_timeout=5,
+            read_timeout=8,
+            retries={'max_attempts': 1}
+        )
         
         # Use the cached on_ec2 value instead of calling is_running_on_ec2() again
         on_ec2_now = on_ec2
@@ -301,17 +309,19 @@ def test_bedrock_connection():
             else:
                 session = boto3.Session()
         
-        # Get caller identity first to verify credentials
-        sts = session.client('sts', region_name=region)
+        # Quick identity check with timeout
+        sts = session.client('sts', region_name=region, config=boto_config)
         identity = sts.get_caller_identity()
-        print(f"AWS Identity: {identity['Arn']}")
+        identity_arn = identity['Arn']
+        print(f"AWS Identity: {identity_arn}")
         
-        bedrock_client = session.client('bedrock-runtime', region_name=region)
+        # Test Bedrock with timeout
+        bedrock_client = session.client('bedrock-runtime', region_name=region, config=boto_config)
         
         payload = {
-            "max_tokens": 100,
+            "max_tokens": 50,
             "anthropic_version": "bedrock-2023-05-31",
-            "messages": [{"role": "user", "content": "Say 'Connection successful' if you can read this."}]
+            "messages": [{"role": "user", "content": "Reply with: OK"}]
         }
         
         response = bedrock_client.invoke_model(
@@ -324,10 +334,9 @@ def test_bedrock_connection():
         response_body = json.loads(response['body'].read())
         response_text = response_body['content'][0]['text']
         
-        env_info = "EC2 Instance Role" if on_ec2_now else f"Profile: {os.environ.get('AWS_PROFILE', 'Default credentials')}"
         return jsonify({
             "success": True,
-            "message": f"Connected successfully!\nModel: {model_id}\nIdentity: {identity['Arn']}\nResponse: {response_text[:100]}"
+            "message": f"✓ Connected successfully!\n\nModel: {model_id}\nIdentity: {identity_arn}\nResponse: {response_text[:100]}"
         })
     except Exception as e:
         error_msg = str(e)
@@ -335,7 +344,7 @@ def test_bedrock_connection():
         env_info = "EC2 Instance Role" if on_ec2 else f"Profile: {os.environ.get('AWS_PROFILE', 'Not set')}"
         return jsonify({
             "success": False,
-            "message": f"Connection failed: {error_msg}\n\n{env_info}\nRegion: {os.environ.get('AWS_DEFAULT_REGION', 'Not set')}"
+            "message": f"✗ Connection failed: {error_msg}\n\nEnvironment: {env_info}\nRegion: {os.environ.get('AWS_DEFAULT_REGION', 'Not set')}"
         }), 500
 
 @app.route('/add_feed', methods=['POST'])
