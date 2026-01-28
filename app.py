@@ -279,7 +279,7 @@ def test_bedrock_connection():
     
     try:
         data = request.json or {}
-        model_id = data.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
+        model_id = data.get('model_id', 'anthropic.claude-3-5-haiku-20241022-v1:0')
         
         print(f"[TEST] Bedrock test started - Model: {model_id}")
         
@@ -288,11 +288,20 @@ def test_bedrock_connection():
             del os.environ['AWS_PROFILE']
             print("[TEST] Removed AWS_PROFILE to use instance role")
         
-        # Configure with timeouts
+        # Configure with timeouts and proxy settings
+        proxy_config = {}
+        if os.environ.get('HTTP_PROXY'):
+            proxy_config['proxies'] = {
+                'http': os.environ.get('HTTP_PROXY'),
+                'https': os.environ.get('HTTPS_PROXY', os.environ.get('HTTP_PROXY'))
+            }
+            print(f"[TEST] Using proxy: {os.environ.get('HTTP_PROXY')}")
+        
         boto_config = Config(
-            connect_timeout=5,
-            read_timeout=8,
-            retries={'max_attempts': 1}
+            connect_timeout=10,
+            read_timeout=15,
+            retries={'max_attempts': 2},
+            **proxy_config
         )
         
         # Create session without any profile - uses instance role on EC2
@@ -338,7 +347,7 @@ def test_bedrock_connection():
         
         return jsonify({
             "success": False,
-            "message": f"✗ Connection Failed\n\nError: {error_msg}\nRegion: us-east-1"
+            "message": f"✗ Connection Failed\n\nError: {error_msg}\nRegion: us-east-1\nProxy: {os.environ.get('HTTP_PROXY', 'Not set')}"
         }), 500
 
 @app.route('/add_feed', methods=['POST'])
