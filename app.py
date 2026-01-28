@@ -276,7 +276,7 @@ def test_bedrock_connection():
     import json
     
     try:
-        data = request.json
+        data = request.json or {}
         model_id = data.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
         
         region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1').strip()
