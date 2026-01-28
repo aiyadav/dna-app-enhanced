@@ -272,7 +272,7 @@ def update_processing_settings():
 
 @app.route('/test_bedrock_connection', methods=['POST'])
 def test_bedrock_connection():
-    """Test Bedrock connection with EC2 instance role"""
+    """Test Bedrock connection - uses EC2 instance role when on EC2"""
     import boto3
     import json
     from botocore.config import Config
@@ -281,10 +281,12 @@ def test_bedrock_connection():
         data = request.json or {}
         model_id = data.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
         
-        print(f"[TEST] Starting Bedrock connection test for model: {model_id}")
-        print(f"[TEST] Running on EC2: {on_ec2}")
-        print(f"[TEST] AWS_PROFILE: {os.environ.get('AWS_PROFILE', 'Not set')}")
-        print(f"[TEST] AWS_DEFAULT_REGION: {os.environ.get('AWS_DEFAULT_REGION', 'Not set')}")
+        print(f"[TEST] Bedrock test started - Model: {model_id}")
+        
+        # Ensure AWS_PROFILE is not set (force instance role on EC2)
+        if 'AWS_PROFILE' in os.environ:
+            del os.environ['AWS_PROFILE']
+            print("[TEST] Removed AWS_PROFILE to use instance role")
         
         # Configure with timeouts
         boto_config = Config(
@@ -293,21 +295,18 @@ def test_bedrock_connection():
             retries={'max_attempts': 1}
         )
         
-        # Create session - on EC2, boto3 automatically uses instance role
+        # Create session without any profile - uses instance role on EC2
         session = boto3.Session(region_name='us-east-1')
         
-        # Test credentials
-        print("[TEST] Getting caller identity...")
+        # Get identity
         sts = session.client('sts', config=boto_config)
         identity = sts.get_caller_identity()
         identity_arn = identity['Arn']
         print(f"[TEST] Identity: {identity_arn}")
         
         # Test Bedrock
-        print("[TEST] Creating Bedrock client...")
         bedrock = session.client('bedrock-runtime', config=boto_config)
         
-        print("[TEST] Invoking model...")
         payload = {
             "max_tokens": 50,
             "anthropic_version": "bedrock-2023-05-31",
@@ -323,7 +322,7 @@ def test_bedrock_connection():
         
         response_body = json.loads(response['body'].read())
         response_text = response_body['content'][0]['text']
-        print(f"[TEST] Success! Response: {response_text}")
+        print(f"[TEST] SUCCESS - Response: {response_text}")
         
         return jsonify({
             "success": True,
@@ -339,7 +338,7 @@ def test_bedrock_connection():
         
         return jsonify({
             "success": False,
-            "message": f"✗ Connection Failed\n\nError: {error_msg}\nRegion: us-east-1\nEnvironment: {'EC2 Instance Role' if on_ec2 else 'Local'}"
+            "message": f"✗ Connection Failed\n\nError: {error_msg}\nRegion: us-east-1"
         }), 500
 
 @app.route('/add_feed', methods=['POST'])
