@@ -283,7 +283,12 @@ function testConnection() {
             },
             body: JSON.stringify({ model_id: bedrockModel.value })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok && response.headers.get('content-type')?.includes('text/html')) {
+                throw new Error('Server returned an error page. Check server logs.');
+            }
+            return response.json();
+        })
         .then(data => {
             testBtn.disabled = false;
             testBtn.innerHTML = '<i class="bi bi-plug-fill"></i> Test Connection';
