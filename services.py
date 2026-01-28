@@ -546,6 +546,12 @@ class NewsProcessor:
                         if not content:
                             continue
                         
+                        # Check if stop was requested before AI analysis
+                        if self.stop_requested:
+                            print(f"\n=== Processing stopped by user ===")
+                            print(f"Processed {processed_count} articles before stopping")
+                            return f"Processing stopped by user. Saved {processed_count} articles."
+                        
                         print(f"  -> Analyzing with AI...")
                         print(f"  -> Available categories: {[c.name for c in categories]}")
                         print(f"  -> Using topics: {[t.name for t in topics]}")
